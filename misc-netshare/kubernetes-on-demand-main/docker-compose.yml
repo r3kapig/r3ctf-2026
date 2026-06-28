@@ -1,0 +1,85 @@
+services:
+  kubernetes:
+    build: ./
+    network_mode: host
+    environment:
+      # domain of the certificate used below
+      # wildcard DNS entry must point to this host
+      APP_DOMAIN: "domain.local"
+      # Host (or IP) that players reach the per-cluster haproxy on. The
+      # controller bakes this into the kubeconfig it hands back. Defaults
+      # to 127.0.0.1 for local validation; override for remote deploys.
+      PUBLIC_HOST: "${PUBLIC_HOST:-127.0.0.1}"
+      # Local testing convenience: when "true" the controller skips the
+      # GZCTF-signed team token check so any non-empty input is accepted.
+      SKIP_TOKEN_VERIFY: "${SKIP_TOKEN_VERIFY:-false}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Use the patched entrypoint without rebuilding the image: the baked one
+      # aborts (and tears down) the whole cluster if the nginx admission webhook
+      # isn't serving yet when headlamp.yaml is applied. This bind mount lets the
+      # fix take effect without a `docker build` (which hits the apt proxy 502).
+      - ./resources/entrypoint.sh:/app/entrypoint.sh
+      # Mount the current workload-cluster template so kube-apiserver feature
+      # gates take effect even when Compose reuses an older controller image.
+      - ./resources/cluster.yaml:/app/cluster.yaml
+      # The controller uses hostPort 8888, so its Deployment must use Recreate
+      # on the single-node management cluster.
+      - ./resources/controller.yaml:/app/controller.yaml
+      # Ghost-in-the-Chain challenge bundle (stale EndpointSlice + Pod-IP reuse)
+      - ../ctf-challenge/challenge.yaml:/app/challenge.yaml
+      - ../ctf-challenge/user.yaml:/app/user.yaml
+      # mount certificate and key
+      - ./resources/tls.key:/app/tls.key
+      # Needs to be the full chain of all certificates
+      - ./resources/tls.crt:/app/tls.crt
+    depends_on:
+      - registry-docker
+      - registry-k8s
+      - registry-quay
+      - registry-gcr
+
+  # local registry cache for each upstream repo
+  registry-docker:
+    image: registry:2
+    networks:
+      - kind
+    volumes:
+      - ./registry-cache-docker:/var/lib/registry
+    environment:
+      REGISTRY_HTTP_ADDR: "0.0.0.0:5000"
+      REGISTRY_PROXY_REMOTEURL: "https://registry-1.docker.io/"
+
+  registry-k8s:
+    image: registry:2
+    networks:
+      - kind
+    volumes:
+      - ./registry-cache-k8s:/var/lib/registry
+    environment:
+      REGISTRY_HTTP_ADDR: "0.0.0.0:5000"
+      REGISTRY_PROXY_REMOTEURL: "https://registry.k8s.io/"
+
+  registry-quay:
+    image: registry:2
+    networks:
+      - kind
+    volumes:
+      - ./registry-cache-quay:/var/lib/registry
+    environment:
+      REGISTRY_HTTP_ADDR: "0.0.0.0:5000"
+      REGISTRY_PROXY_REMOTEURL: "https://quay.io/"
+
+  registry-gcr:
+    image: registry:2
+    networks:
+      - kind
+    volumes:
+      - ./registry-cache-gcr:/var/lib/registry
+    environment:
+      REGISTRY_HTTP_ADDR: "0.0.0.0:5000"
+      REGISTRY_PROXY_REMOTEURL: "https://gcr.io/"
+
+networks:
+  kind:
+    external: true

@@ -1,0 +1,748 @@
+# Customer profile platform workload bundle.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-runtime
+  labels:
+    environment: staging
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer-platform
+  labels:
+    environment: staging
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform-operations
+  labels:
+    environment: staging
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-runtime-quota
+  namespace: tenant-runtime
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "2"
+    requests.memory: "1Gi"
+    limits.cpu: "4"
+    limits.memory: "2Gi"
+    services: "5"
+    persistentvolumeclaims: "0"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-runtime-limits
+  namespace: tenant-runtime
+spec:
+  limits:
+    - type: Pod
+      max:
+        cpu: "500m"
+        memory: "256Mi"
+    - type: Container
+      default:
+        cpu: "100m"
+        memory: "64Mi"
+      defaultRequest:
+        cpu: "50m"
+        memory: "32Mi"
+      max:
+        cpu: "500m"
+        memory: "256Mi"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: endpoint-registry-controller
+  namespace: platform-operations
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: customer-profile-api
+  namespace: customer-platform
+automountServiceAccountToken: false
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: profile-cache-refresh
+  namespace: platform-operations
+automountServiceAccountToken: false
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: endpoint-registry-writer
+  namespace: customer-platform
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "delete"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "create", "update", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: endpoint-registry-writer
+  namespace: customer-platform
+subjects:
+  - kind: ServiceAccount
+    name: endpoint-registry-controller
+    namespace: platform-operations
+roleRef:
+  kind: Role
+  name: endpoint-registry-writer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: tenant-runtime-workload-policy
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  matchConditions:
+    - name: runtime-operator-only
+      expression: >-
+        request.userInfo.username in [
+          'system:serviceaccount:default:runtime-operator',
+          'system:serviceaccount:tenant-runtime:runtime-operator'
+        ]
+  validations:
+    - expression: >-
+        !has(object.metadata.labels)
+        || !('app.kubernetes.io/name' in object.metadata.labels)
+        || object.metadata.labels['app.kubernetes.io/name'] != 'customer-profile-api'
+      message: "the customer-profile-api workload identity is reserved"
+      reason: Forbidden
+    - expression: "object.spec.serviceAccountName == 'runtime-operator'"
+      message: "tenant Pods must use the runtime-operator ServiceAccount"
+      reason: Forbidden
+    - expression: >-
+        has(object.spec.automountServiceAccountToken)
+        && object.spec.automountServiceAccountToken == false
+      message: "tenant Pods must disable automatic ServiceAccount token mounting"
+      reason: Forbidden
+    - expression: >-
+        !has(object.metadata.annotations)
+        || (
+          !('cni.projectcalico.org/ipAddrs' in object.metadata.annotations)
+          && !('cni.projectcalico.org/ipv4pools' in object.metadata.annotations)
+          && !('cni.projectcalico.org/ipv6pools' in object.metadata.annotations)
+        )
+      message: "requesting a Pod IP or Calico pool explicitly is not permitted"
+      reason: Forbidden
+    - expression: >-
+        !has(object.spec.volumes)
+        || object.spec.volumes.all(v,
+          !has(v.configMap) && !has(v.secret) && !has(v.projected)
+        )
+      message: "tenant Pods may not mount ConfigMaps, Secrets, or projected volumes"
+      reason: Forbidden
+    - expression: "object.spec.containers.size() == 1"
+      message: "tenant Pods must contain exactly one application container"
+      reason: Forbidden
+    - expression: >-
+        (!has(object.spec.initContainers) || object.spec.initContainers.size() == 0)
+        && (!has(object.spec.ephemeralContainers) || object.spec.ephemeralContainers.size() == 0)
+      message: "init and ephemeral containers are not permitted"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          c.image == 'python:3.11-alpine'
+          && c.imagePullPolicy == 'Never'
+        )
+      message: "tenant Pods must use the preloaded python:3.11-alpine image"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          has(c.workingDir) && c.workingDir == '/'
+        )
+      message: "tenant containers must explicitly use / as their working directory"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          !has(c.readinessProbe)
+          && !has(c.livenessProbe)
+          && !has(c.startupProbe)
+          && !has(c.lifecycle)
+        )
+      message: "container probes and lifecycle handlers are not permitted"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          !has(c.stdin) || c.stdin == false
+        ) && object.spec.containers.all(c,
+          !has(c.tty) || c.tty == false
+        )
+      message: "interactive tenant containers are not permitted"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          !has(c.envFrom)
+          && (
+            !has(c.env)
+            || c.env.all(e, !has(e.valueFrom))
+          )
+        )
+      message: "tenant containers may not import environment values from cluster resources"
+      reason: Forbidden
+    - expression: >-
+        object.spec.containers.all(c,
+          has(c.securityContext)
+          && has(c.securityContext.allowPrivilegeEscalation)
+          && c.securityContext.allowPrivilegeEscalation == false
+          && has(c.securityContext.readOnlyRootFilesystem)
+          && c.securityContext.readOnlyRootFilesystem == true
+          && has(c.securityContext.capabilities)
+          && has(c.securityContext.capabilities.drop)
+          && 'ALL' in c.securityContext.capabilities.drop
+        )
+      message: "tenant containers must use the restricted container security context"
+      reason: Forbidden
+
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: tenant-runtime-workload-policy
+spec:
+  policyName: tenant-runtime-workload-policy
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: tenant-runtime
+
+# ── NetworkPolicy ────────────────────────────────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: tenant-runtime
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: tenant-runtime
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-profile-refresh
+  namespace: tenant-runtime
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: platform-operations
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: profile-cache-refresh
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: customer-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-profile-refresh
+  namespace: customer-platform
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: customer-profile-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: platform-operations
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: profile-cache-refresh
+      ports:
+        - protocol: TCP
+          port: 8080
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: profile-client-credentials
+  namespace: platform-operations
+type: Opaque
+stringData:
+  client-assertion: "svc.v1.pending.pending"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customer-profile-api-config
+  namespace: customer-platform
+data:
+  server.py: |
+    #!/usr/bin/env python3
+    # customer-profile-api — structured JSON access logging (cloud-native style).
+    # SECURITY: never log the Authorization header; it carries the per-team
+    # service credential. Only safe request metadata is emitted.
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import json, datetime, time
+
+    SERVICE = "customer-profile-api"
+    VERSION = "1.4.2"
+
+    def _now():
+        return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    class ProfileAPIHandler(BaseHTTPRequestHandler):
+        server_version = "customer-profile-api/1.4.2"
+        sys_version = ""
+
+        def _handle(self):
+            t0 = time.time()
+            authenticated = bool(self.headers.get("Authorization"))
+            status = 200 if authenticated else 401
+            body = json.dumps({
+                "service": SERVICE,
+                "version": VERSION,
+                "timestamp": _now(),
+                "path": self.path,
+                "authenticated": authenticated,
+                "message": "Profile snapshot refreshed" if authenticated else "Unauthorized",
+            }).encode()
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            print(json.dumps({
+                "ts": _now(),
+                "level": "info" if authenticated else "warning",
+                "logger": SERVICE,
+                "msg": "http.request",
+                "method": self.command,
+                "path": self.path,
+                "status": status,
+                "duration_ms": round((time.time() - t0) * 1000, 2),
+                "remote_addr": self.client_address[0],
+                "request_id": self.headers.get("X-Request-ID", "-"),
+                "tenant": self.headers.get("X-Tenant-ID", "-"),
+                "upstream": self.headers.get("X-Service-Route", "-"),
+                "user_agent": self.headers.get("User-Agent", "-"),
+                "authenticated": authenticated,
+            }), flush=True)
+
+        do_GET = _handle
+        do_POST = _handle
+
+        def log_message(self, *a):  # suppress stdlib line; structured log above
+            pass
+
+    print(json.dumps({"ts": _now(), "level": "info", "logger": SERVICE,
+                      "msg": "server.start", "version": VERSION, "addr": "0.0.0.0:8080"}), flush=True)
+    HTTPServer(("0.0.0.0", 8080), ProfileAPIHandler).serve_forever()
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-profile-api
+  namespace: customer-platform
+  labels:
+    app.kubernetes.io/name: customer-profile-api
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: customer-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: customer-profile-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: customer-profile-api
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/part-of: customer-platform
+    spec:
+      serviceAccountName: customer-profile-api
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: api
+          image: python:3.11-alpine
+          command: ["python3", "/app/server.py"]
+          env:
+            - name: SERVICE_NAME
+              value: "customer-profile-api"
+            - name: SERVICE_VERSION
+              value: "1.4.2"
+            - name: APP_ENV
+              value: "staging"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: HTTP_PORT
+              value: "8080"
+            - name: PROFILE_CACHE_TTL_SECONDS
+              value: "300"
+            - name: SERVICE_REGION
+              value: "ap-southeast-1"
+            - name: AUTH_MODE
+              value: "service-assertion"
+            - name: PROFILE_STORE_DSN
+              value: "postgres://profiles@profiles-db.customer-platform.svc.cluster.local:5432/profiles?sslmode=require"
+            - name: FALLBACK_API_KEY
+              value: "sk_stg_7c2f9b1ad4e83a6f0bd5"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: app-code
+          configMap:
+            name: customer-profile-api-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-query
+  namespace: customer-platform
+  labels:
+    app.kubernetes.io/name: customer-profile-api
+    app.kubernetes.io/component: service
+    app.kubernetes.io/part-of: customer-platform
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-cache-refresh-config
+  namespace: platform-operations
+data:
+  client.sh: |
+    #!/bin/sh
+    echo "[ProfileRefresh] Starting profile snapshot refresh loop..."
+    while true; do
+      curl -s \
+        -H "Authorization: Bearer ${CLIENT_ASSERTION}" \
+        -H "X-Request-ID: $(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo req-$$)" \
+        -H "X-Tenant-ID: tenant-runtime" \
+        -H "X-Service-Route: profile-cache-refresh" \
+        "http://profile-query.customer-platform.svc.cluster.local/v1/cache/refresh/profile-snapshot" \
+        --connect-timeout 3 --max-time 5 2>/dev/null \
+        || echo "[ProfileRefresh] Request failed; retrying on the next interval"
+      sleep 10
+    done
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-cache-refresh
+  namespace: platform-operations
+  labels:
+    app.kubernetes.io/name: profile-cache-refresh
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: customer-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: profile-cache-refresh
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: profile-cache-refresh
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: customer-platform
+    spec:
+      serviceAccountName: profile-cache-refresh
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: client
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "/scripts/client.sh"]
+          env:
+            - name: CLIENT_ASSERTION
+              valueFrom:
+                secretKeyRef:
+                  name: profile-client-credentials
+                  key: client-assertion
+            - name: WORKER_NAME
+              value: "profile-cache-refresh"
+            - name: APP_ENV
+              value: "staging"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: REFRESH_INTERVAL_SECONDS
+              value: "10"
+            - name: TARGET_SERVICE
+              value: "profile-query.customer-platform.svc.cluster.local"
+            - name: REQUEST_TIMEOUT_MS
+              value: "5000"
+            # Decoy / business-noise fields.
+            - name: AUTH_MODE
+              value: "service-assertion"
+            - name: TOKEN_ENDPOINT
+              value: "http://identity.platform-operations.svc.cluster.local/v1/assertions/issue"
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: scripts
+          configMap:
+            name: profile-cache-refresh-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-reconcile-config
+  namespace: platform-operations
+data:
+  discovery.sh: |
+    #!/bin/sh
+    API="https://kubernetes.default.svc"
+    TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    CACERT="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    NS="customer-platform"
+    SLICE="profile-query-registry"
+    STEADY=40     # Stable backend service time.
+    WINDOW=28     # Service-discovery eventual-consistency lag (stale window); must exceed Calico IP reuse delay.
+
+    api() { curl -s --cacert "$CACERT" -H "Authorization: Bearer $TOKEN" "$@"; }
+
+    pod_ip() {
+      api "$API/api/v1/namespaces/$NS/pods?labelSelector=app.kubernetes.io%2Fname%3Dcustomer-profile-api&fieldSelector=status.phase=Running" \
+        | grep -oE '"podIP":[[:space:]]*"[0-9.]+"' | head -1 \
+        | sed -E 's/.*"([0-9.]+)".*/\1/'
+    }
+    pod_name() {
+      api "$API/api/v1/namespaces/$NS/pods?labelSelector=app.kubernetes.io%2Fname%3Dcustomer-profile-api&fieldSelector=status.phase=Running" \
+        | grep -oE '"name":[[:space:]]*"customer-profile-api-[^"]*"' | head -1 \
+        | sed -E 's/.*"(customer-profile-api-[^"]+)".*/\1/'
+    }
+
+    slice_json() {  # $1 = IP
+      printf '{"apiVersion":"discovery.k8s.io/v1","kind":"EndpointSlice","metadata":{"name":"%s","namespace":"%s","labels":{"kubernetes.io/service-name":"profile-query","endpointslice.kubernetes.io/managed-by":"endpoint-catalog-reconciler"}},"addressType":"IPv4","ports":[{"name":"http","protocol":"TCP","port":8080}],"endpoints":[{"addresses":["%s"],"conditions":{"ready":true}}]}' "$SLICE" "$NS" "$1"
+    }
+    ensure_slice() {  # Create the slice if it does not already exist.
+      code=$(api -o /dev/null -w '%{http_code}' "$API/apis/discovery.k8s.io/v1/namespaces/$NS/endpointslices/$SLICE")
+      if [ "$code" = "404" ]; then
+        api -X POST -H "Content-Type: application/json" -d "$(slice_json "$1")" \
+          "$API/apis/discovery.k8s.io/v1/namespaces/$NS/endpointslices" >/dev/null
+      fi
+    }
+    set_endpoint() {  # Use merge-patch to update only endpoints.
+      api -X PATCH -H "Content-Type: application/merge-patch+json" \
+        -d "{\"endpoints\":[{\"addresses\":[\"$1\"],\"conditions\":{\"ready\":true}}]}" \
+        "$API/apis/discovery.k8s.io/v1/namespaces/$NS/endpointslices/$SLICE" >/dev/null
+    }
+
+    echo "[EndpointCatalog] reconciler started"
+    while :; do IP=$(pod_ip); [ -n "$IP" ] && break; sleep 2; done
+    ensure_slice "$IP"; set_endpoint "$IP"
+    echo "[EndpointCatalog] initial backend -> $IP"
+
+    while true; do
+      IP=$(pod_ip); [ -n "$IP" ] && set_endpoint "$IP"
+      echo "[EndpointCatalog] backend synchronized -> $IP"
+      sleep $STEADY
+      POD=$(pod_name)
+      if [ -n "$POD" ]; then
+        echo "[EndpointCatalog] rotating backend $POD (current address $IP)"
+        api -X DELETE "$API/api/v1/namespaces/$NS/pods/$POD?gracePeriodSeconds=0" >/dev/null
+      fi
+      # Eventual-consistency lag: keep the EndpointSlice stale so it still advertises the old IP.
+      echo "[EndpointCatalog] propagation delay ${WINDOW}s for backend address $IP"
+      sleep $WINDOW
+      # The next loop reconciles to the new Pod IP, closing the stale window.
+    done
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: endpoint-catalog-reconciler
+  namespace: platform-operations
+  labels:
+    app.kubernetes.io/name: endpoint-catalog-reconciler
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: customer-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: endpoint-catalog-reconciler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: endpoint-catalog-reconciler
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/part-of: customer-platform
+    spec:
+      serviceAccountName: endpoint-registry-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: discovery
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "/scripts/discovery.sh"]
+          env:
+            - name: CONTROLLER_NAME
+              value: "endpoint-catalog-reconciler"
+            - name: APP_ENV
+              value: "staging"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: WATCH_NAMESPACE
+              value: "customer-platform"
+            - name: MANAGED_SERVICE
+              value: "profile-query"
+            # Decoy / business-noise fields.
+            - name: REGISTRY_BACKEND
+              value: "etcd"
+            - name: LEADER_ELECTION
+              value: "enabled"
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: scripts
+          configMap:
+            name: registry-reconcile-config
