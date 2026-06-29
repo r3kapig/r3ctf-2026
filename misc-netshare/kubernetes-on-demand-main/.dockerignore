@@ -1,3 +1,0 @@
-*.kubeconfig
-__pycache__
-registry-cache-*

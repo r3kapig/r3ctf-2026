@@ -1,11 +1,11 @@
 # ============================================================
 # Runtime operator access
 #
-# KOND issues the operator token from the runtime-operator ServiceAccount in
-# default. A same-named ServiceAccount exists in tenant-runtime for Pods
-# created by that operator. The identity can manage tenant workloads and
-# observe the customer service catalog, but cannot read credentials or mutate
-# customer-platform resources.
+# The challenge launcher issues the operator token from the runtime-operator
+# ServiceAccount in default. A same-named ServiceAccount exists in
+# tenant-runtime for Pods created by that operator. The identity can manage
+# tenant workloads and observe the customer service catalog, but cannot read
+# credentials or mutate customer-platform resources.
 # ============================================================
 
 apiVersion: v1
