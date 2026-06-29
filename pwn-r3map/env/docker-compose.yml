@@ -1,0 +1,17 @@
+services:
+  r3map:
+    build:
+      context: ..
+      dockerfile: env/Dockerfile
+    image: r3ctf-2026-pwn-r3map:latest
+    container_name: r3ctf-2026-pwn-r3map
+    restart: unless-stopped
+    ports:
+      - "1337:1337"
+    environment:
+      PORT: "1337"
+      FLAG: "${FLAG:?FLAG is required}"
+    devices:
+      - /dev/kvm:/dev/kvm
+    security_opt:
+      - seccomp=unconfined
