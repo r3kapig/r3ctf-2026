@@ -1,0 +1,8 @@
+.git
+.direnv
+.secrets
+release
+vm
+target
+result
+result-*
