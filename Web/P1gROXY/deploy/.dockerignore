@@ -1,0 +1,5 @@
+# macOS metadata must never enter the build context — the proxy CMakeLists uses
+# file(GLOB_RECURSE src/*.cpp), so AppleDouble "._*.cpp" sidecars would be compiled.
+**/.git
+**/.DS_Store
+**/._*

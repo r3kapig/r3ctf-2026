@@ -1,0 +1,34 @@
+# whisper_backupd.rc - init service for the Whisper backup coordinator.
+#
+# aosp-engineer: import this from init (add `import /system/etc/init/whisper_backupd.rc`
+# or drop it in /system/etc/init/). The binary is installed at
+# /system/bin/whisper_backupd.
+#
+# The daemon runs as root so it can snapshot app backup metadata. init creates
+# the control socket at /dev/socket/whisper_backup and passes it via the
+# ANDROID_SOCKET_whisper_backup fd convention.
+#
+# Socket mode 0660 root:system: the backup manager (system_server, AID_SYSTEM)
+# connects. The daemon additionally enforces a peer-uid == AID_SYSTEM check on
+# SO_PEERCRED per connection.
+
+# NOTE (aosp-engineer): on the permissive goldfish AVD the custom
+# u:r:whisper_backupd:s0 domain does not exist, so init would refuse the
+# service. Two supported options, mirroring how whisperd is launched:
+#   (a) Permissive AVD: drop the `seclabel` line (init runs it in the default
+#       domain) OR start it the same nohup way as whisperd:
+#         adb shell 'nohup /system/bin/whisper_backupd \
+#             >/data/local/tmp/whisper_backupd.log 2>&1 &'
+#   (b) Enforcing Cuttlefish: define u:r:whisper_backupd:s0 in sepolicy and keep
+#       the seclabel line as below.
+
+service whisper_backupd /system/bin/whisper_backupd
+    class main
+    user root
+    group root system
+    socket whisper_backup stream 0660 root system
+    oneshot
+    seclabel u:r:whisper_backupd:s0
+
+on boot
+    start whisper_backupd

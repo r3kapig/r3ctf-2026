@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}WarehouseHub Overview{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Internal operations portal</p>
+    <h1>WarehouseHub</h1>
+    <p class="lede">Read-only routing, service health, and maintenance state for local warehouse systems.</p>
+  </div>
+  <dl class="summary">
+    <div>
+      <dt>Upstream</dt>
+      <dd>local service</dd>
+    </div>
+    <div>
+      <dt>Mode</dt>
+      <dd>localhost upstream</dd>
+    </div>
+    <div>
+      <dt>Policy</dt>
+      <dd>read-only</dd>
+    </div>
+  </dl>
+</section>
+
+<section>
+  <div class="split">
+    <div>
+      <h2>Service Checks</h2>
+      <p class="muted">Fixed operational checks reported by the local control plane.</p>
+    </div>
+    <a class="button secondary" href="{{ absolute_for('api_status') }}">JSON</a>
+  </div>
+  <div class="check-grid">
+    {% for check in checks %}
+    <article class="check">
+      <div class="check-head">
+        <h3>{{ check.name }}</h3>
+        <span class="badge {{ 'ok' if check.state == 'nominal' else 'watch' }}">{{ check.state }}</span>
+      </div>
+      <p>{{ check.detail }}</p>
+      <dl>
+        <div>
+          <dt>Owner</dt>
+          <dd>{{ check.owner }}</dd>
+        </div>
+        <div>
+          <dt>Latency</dt>
+          <dd>{{ check.latency_ms }} ms</dd>
+        </div>
+      </dl>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section>
+  <h2>Maintenance Windows</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Window</th>
+        <th>Scope</th>
+        <th>Impact</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in maintenance %}
+      <tr>
+        <td>{{ row.window }}</td>
+        <td>{{ row.scope }}</td>
+        <td>{{ row.impact }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="dense">
+  <h2>Routing Notes</h2>
+  <!-- edge-stream-note -->
+  <p>WarehouseHub is served from the local application network. Public clients reach this page through the configured edge proxy, which owns browser-facing transport policy.</p>
+  <p>The status document is static operational content. WarehouseHub reports routing notes, service health, maintenance windows, and links to the public status API. WarehouseHub reports routing notes, service health, maintenance windows, and links to the public status API.</p>
+  <p>Operators use this view to confirm the internal service is alive before looking at edge logs. Operators use this view to confirm the internal service is alive before looking at edge logs.</p>
+</section>
+{% endblock %}

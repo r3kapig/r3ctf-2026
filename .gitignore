@@ -1,0 +1,12 @@
+# macOS metadata
+.DS_Store
+**/.DS_Store
+**/._*
+
+# Reference / scratch material (not part of the r3ctf-2026 repo)
+/reference/
+
+# Large challenge artifacts (>100MB, GitHub hard limit).
+# Distribute these via GitHub Release / external object storage instead.
+/Pwn/whisper/attachment/whisper-local-stack.7z
+/Misc/Time Capsule/attachment/satellitelog/Satellite_log--2A7E.4.003.pcap

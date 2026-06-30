@@ -1,0 +1,33 @@
+services:
+  vpn:
+    build: ..
+    ports:
+      - "4433:4433"
+    networks:
+      internal:
+        ipv4_address: 172.20.0.2
+
+  web:
+    image: nginx:alpine
+    networks:
+      internal:
+        ipv4_address: 172.20.0.3
+
+  api:
+    image: python:3.12-alpine
+    environment:
+      FLAG: ${FLAG:-flag{local_test_flag}}
+    command: >
+      sh -lc 'printf "%s\n" "$$FLAG" > /tmp/flag.txt &&
+      cd /tmp &&
+      python3 -m http.server 9000 --bind 0.0.0.0'
+    networks:
+      internal:
+        ipv4_address: 172.20.0.4
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

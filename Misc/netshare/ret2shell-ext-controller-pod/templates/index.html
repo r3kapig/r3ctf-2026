@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cluster Access</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: #333;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 720px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        text-align: center;
+      }
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+      .status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .status.connecting {
+        background: #fff3cd;
+        color: #8a6d3b;
+      }
+      .status.ready {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+      .status.error,
+      .status.disconnected {
+        background: #f8d7da;
+        color: #842029;
+      }
+      .status-row {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+      pre.kubeconfig {
+        background: #0d1117;
+        color: #c9d1d9;
+        padding: 16px;
+        border-radius: 10px;
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        white-space: pre;
+        overflow-x: auto;
+        max-height: 360px;
+        overflow-y: auto;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .btn {
+        flex: 1;
+        text-align: center;
+        padding: 12px 20px;
+        font-size: 0.95rem;
+        color: #fff;
+        background: #0d6efd;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-decoration: none;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+      }
+      .btn:hover:not(:disabled) {
+        background: #0b5ed7;
+      }
+      .btn:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .message {
+        margin-top: 14px;
+        font-size: 0.9rem;
+        min-height: 1.2rem;
+        text-align: center;
+      }
+      .message.error {
+        color: #dc3545;
+      }
+      .message.success {
+        color: #198754;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>集群访问凭据</h1>
+      <div class="subtitle">题目实例已为你的队伍创建,使用下方 kubeconfig 访问集群</div>
+
+      <div class="status-row">
+        <span class="status connecting" id="status">连接中…</span>
+      </div>
+
+      <pre class="kubeconfig" id="kubeconfig">等待 controller 返回 kubeconfig…</pre>
+
+      <div class="actions">
+        <button class="btn" id="copyBtn" type="button" disabled>复制</button>
+        <a class="btn" id="downloadBtn" href="/kubeconfig" download>下载 kubeconfig</a>
+      </div>
+      <div class="message" id="message"></div>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const kubeEl = document.getElementById("kubeconfig");
+      const copyBtn = document.getElementById("copyBtn");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const msg = document.getElementById("message");
+
+      const LABELS = {
+        connecting: "连接中…",
+        ready: "就绪",
+        error: "错误",
+        disconnected: "连接已断开",
+      };
+
+      function render(data) {
+        const status = data.status || "connecting";
+        statusEl.className = "status " + status;
+        statusEl.textContent = LABELS[status] || status;
+
+        if (data.kubeconfig) {
+          kubeEl.textContent = data.kubeconfig;
+          copyBtn.disabled = false;
+          downloadBtn.classList.remove("btn-disabled");
+        } else if (data.error) {
+          kubeEl.textContent = data.error;
+        }
+      }
+
+      async function loadStatus() {
+        try {
+          const res = await fetch("/api/status");
+          const data = await res.json();
+          render(data);
+          if (data.status === "ready" || data.status === "error") return;
+        } catch (e) {
+          msg.className = "message error";
+          msg.textContent = "获取状态失败：" + e.message;
+        }
+        setTimeout(loadStatus, 2000);
+      }
+
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(kubeEl.textContent);
+          msg.className = "message success";
+          msg.textContent = "已复制到剪贴板";
+        } catch (e) {
+          msg.className = "message error";
+          msg.textContent = "复制失败：" + e.message;
+        }
+      });
+
+      loadStatus();
+    </script>
+  </body>
+</html>

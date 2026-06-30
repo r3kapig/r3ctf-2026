@@ -1,0 +1,116 @@
+# ============================================================
+# Runtime operator access
+#
+# The challenge launcher issues the operator token from the runtime-operator
+# ServiceAccount in default. A same-named ServiceAccount exists in
+# tenant-runtime for Pods created by that operator. The identity can manage
+# tenant workloads and observe the customer service catalog, but cannot read
+# credentials or mutate customer-platform resources.
+# ============================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-operator
+  namespace: default
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-operator
+  namespace: tenant-runtime
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tenant-workload-manager
+  namespace: tenant-runtime
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "delete", "deletecollection"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tenant-workload-manager
+  namespace: tenant-runtime
+subjects:
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: default
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: tenant-runtime
+roleRef:
+  kind: Role
+  name: tenant-workload-manager
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: service-catalog-reader
+  namespace: customer-platform
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: service-catalog-reader
+  namespace: customer-platform
+subjects:
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: default
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: tenant-runtime
+roleRef:
+  kind: Role
+  name: service-catalog-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-inventory-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-inventory-reader
+subjects:
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: default
+  - kind: ServiceAccount
+    name: runtime-operator
+    namespace: tenant-runtime
+roleRef:
+  kind: ClusterRole
+  name: runtime-inventory-reader
+  apiGroup: rbac.authorization.k8s.io

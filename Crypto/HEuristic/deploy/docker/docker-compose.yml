@@ -1,0 +1,10 @@
+version: '3'
+services:
+  test:
+    # image: test
+    build: ../
+    environment:
+      FLAG: "flag{local_test_flag}"
+    ports:
+      - 9999:9999
+    restart: unless-stopped

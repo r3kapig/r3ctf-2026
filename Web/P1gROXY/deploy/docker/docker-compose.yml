@@ -1,0 +1,9 @@
+version: '3'
+services:
+  p1groxy:
+    build: ..
+    environment:
+      FLAG: "r3ctf{local_test_flag}"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

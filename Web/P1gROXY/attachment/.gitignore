@@ -1,0 +1,6 @@
+/build/
+/var/
+/services/proxy/bin/
+/services/warehousehub/.venv/
+__pycache__/
+*.pyc

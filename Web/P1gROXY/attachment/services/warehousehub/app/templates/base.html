@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}WarehouseHub{% endblock %}</title>
+  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+  <link rel="alternate" type="application/json" href="{{ absolute_for('api_status') }}">
+  <link rel="stylesheet" href="{{ absolute_for('static', filename='app.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ absolute_for('overview') }}">WarehouseHub</a>
+    <nav aria-label="Primary">
+      <a href="{{ absolute_for('overview') }}">Overview</a>
+      <a href="{{ absolute_for('status') }}">Status</a>
+      <a href="{{ absolute_for('api_status') }}">API</a>
+    </nav>
+  </header>
+  <main class="shell">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

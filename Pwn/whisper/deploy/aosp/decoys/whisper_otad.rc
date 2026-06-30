@@ -1,0 +1,39 @@
+# whisper_otad.rc - init service for the Whisper OTA update applier.
+#
+# aosp-engineer: import this from init (add `import /system/etc/init/whisper_otad.rc`
+# or drop it in /system/etc/init/). The binary is installed at
+# /system/bin/whisper_otad.
+#
+# The daemon runs as root so it can stage system update packages. init creates
+# the control socket at /dev/socket/whisper_ota and passes it via the
+# ANDROID_SOCKET_whisper_ota fd convention.
+#
+# Socket mode 0666 so the update-check client can connect. The daemon only ever
+# stages a magic-valid package located under the fixed /data/ota_package/
+# allow-list prefix; the staging step is a log append.
+
+# NOTE (aosp-engineer): on the permissive goldfish AVD the custom
+# u:r:whisper_otad:s0 domain does not exist, so init would refuse the service.
+# Two supported options, mirroring how whisperd is launched:
+#   (a) Permissive AVD: drop the `seclabel` line (init runs it in the default
+#       domain) OR start it the same nohup way as whisperd:
+#         adb shell 'mkdir -p /data/ota_package'
+#         adb shell 'nohup /system/bin/whisper_otad \
+#             >/data/local/tmp/whisper_otad.log 2>&1 &'
+#   (b) Enforcing Cuttlefish: define u:r:whisper_otad:s0 in sepolicy and keep
+#       the seclabel line as below.
+
+service whisper_otad /system/bin/whisper_otad
+    class main
+    user root
+    group root
+    socket whisper_ota stream 0666 root root
+    oneshot
+    seclabel u:r:whisper_otad:s0
+
+on post-fs-data
+    # Download staging area for update packages.
+    mkdir /data/ota_package 0771 root system
+
+on boot
+    start whisper_otad

@@ -1,0 +1,53 @@
+steps:
+- task: JavaToolInstaller@0
+  displayName: Use Java 17
+  inputs:
+    versionSpec: '17'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+- task: CMake@1
+  displayName: Verify CMake version
+  inputs:
+    workingDirectory: '$(Build.SourcesDirectory)'
+    cmakeArgs: '--version'
+
+- task: Gradle@4
+  displayName: Compile Android Native Libraries
+  inputs:
+    workingDirectory: '$(Build.SourcesDirectory)/android'
+    gradleWrapperFile: '$(Build.SourcesDirectory)/android/gradlew'
+    gradleOptions: ''
+    options: '--stacktrace --no-parallel'
+    publishJUnitResults: false
+    testResultsFiles: '**/TEST-*.xml'
+    tasks: 'build'
+
+- task: PowerShell@2
+  displayName: Copy binary files to staging directory
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Directories
+      $TargetDirectoryArm64 = Join-Path -Path $Env:BUILD_ARTIFACTSTAGINGDIRECTORY -ChildPath lib/arm64-v8a
+      $TargetDirectoryX64 = Join-Path -Path $Env:BUILD_ARTIFACTSTAGINGDIRECTORY -ChildPath lib/x86_64
+
+      # Create directory if necessary
+      mkdir -ErrorAction Ignore $TargetDirectoryArm64
+      mkdir -ErrorAction Ignore $TargetDirectoryX64
+
+      # Show files to be copied
+      Write-Host "Files to be copied:"
+      Get-ChildItem -Path $Env::BUILD_SOURCESDIRECTORY -Recurse | Where {$_.Fullname -match 'RelWithDebInfo\\.*\\arm64-v8a\\lib\\arm64-v8a\\libsealc.so'}
+      Get-ChildItem -Path $Env::BUILD_SOURCESDIRECTORY -Recurse | Where {$_.Fullname -match 'RelWithDebInfo\\.*\\x86_64\\lib\\x86_64\\libsealc.so'}
+
+      # Copy files to target directories
+      Write-Host "Copying files to $TargetDirectoryArm64 and $TargetDirectoryX64"
+      Get-ChildItem -Path $Env::BUILD_SOURCESDIRECTORY -Recurse | Where {$_.Fullname -match 'RelWithDebInfo\\.*\\arm64-v8a\\lib\\arm64-v8a\\libsealc.so'} | Copy-Item -Destination $TargetDirectoryArm64
+      Get-ChildItem -Path $Env::BUILD_SOURCESDIRECTORY -Recurse | Where {$_.Fullname -match 'RelWithDebInfo\\.*\\x86_64\\lib\\x86_64\\libsealc.so'} | Copy-Item -Destination $TargetDirectoryX64
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish build artifacts
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: ${{ parameters.artifactName }}

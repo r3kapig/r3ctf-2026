@@ -1,0 +1,29 @@
+{
+  "name": "Trusted Hash Challenge",
+  "image": "<image>:<tag>",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "runArgs": [
+    "--privileged",
+    "-p",
+    "2222:2222",
+    "-p",
+    "31337:31337",
+    "-p",
+    "5901:5901",
+    "-p",
+    "5701:5701"
+  ],
+  "containerEnv": {
+    "XDG_CACHE_HOME": "/tmp/nix-cache"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "jnoortheen.nix-ide",
+        "rust-lang.rust-analyzer"
+      ]
+    }
+  },
+  "postCreateCommand": "nix develop .#default --command true",
+  "remoteUser": "root"
+}

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxelEditor</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; margin: 0; overflow: hidden; background-color: #1a1a1a; color: #e0e0e0; display: flex; }
+        #renderer-container { flex-grow: 1; height: 100vh; }
+        #controls-container { width: 420px; height: 100vh; background-color: #2c2c2c; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; border-left: 2px solid #444; overflow-y: auto; }
+        h2 { margin-top: 0; color: #00ffcc; text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        textarea { width: 100%; height: 200px; background-color: #111; color: #00ff7f; border: 1px solid #444; border-radius: 4px; font-size: 14px; padding: 10px; box-sizing: border-box; resize: vertical; margin-top: 10px; }
+        button { width: 100%; padding: 10px; margin-top: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
+        button:hover { background-color: #45a049; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        button.secondary { background-color: #008CBA; }
+        button.secondary:hover { background-color: #007B9A; }
+        button.danger { background-color: #f44336; }
+        button.danger:hover { background-color: #da190b; }
+        fieldset { border: 1px solid #555; border-radius: 4px; padding: 10px; margin-bottom: 15px; }
+        legend { color: #00ffcc; padding: 0 5px; }
+    </style>
+</head>
+<body>
+    <div id="renderer-container"></div>
+    <div id="controls-container">
+        <h2>VoxelEditor</h2>
+        <fieldset>
+            <legend>Data Exchange</legend>
+            <textarea id="io-textarea" placeholder="Paste or load JSON coordinate sequence..."></textarea>
+            <button class="secondary" onclick="document.getElementById('json-file-input').click()">Load JSON File</button>
+            <input type="file" id="json-file-input" accept=".json" style="display:none;" onchange="loadJSONFile(event)">
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="renderFromInput()">Render Scene</button>
+                <button onclick="exportAllVoxels()">Export All</button>
+            </div>
+            <button class="danger" onclick="clearScene()">Clear Scene</button>
+        </fieldset>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls, cubeGroup, helperGroup;
+        let voxelData = new Map();
+        let gridHelper, axesHelper;
+
+        const whiteMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const blackMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
+
+        function createFixedHelpers() {
+            if (gridHelper) helperGroup.remove(gridHelper);
+            if (axesHelper) helperGroup.remove(axesHelper);
+            gridHelper = new THREE.GridHelper(32, 32);
+            gridHelper.position.y = -0.5;
+            axesHelper = new THREE.AxesHelper(16);
+            helperGroup.add(gridHelper);
+            helperGroup.add(axesHelper);
+        }
+
+        function focusOnScene() {
+            const box = new THREE.Box3().setFromObject(cubeGroup);
+            if (box.isEmpty()) {
+                camera.position.set(15, 15, 15);
+                controls.target.set(0, 0, 0);
+            } else {
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                let cameraDist = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                cameraDist = cameraDist < 10 ? 15 : cameraDist * 1.5;
+                camera.position.copy(center);
+                camera.position.add(new THREE.Vector3(1, 0.7, 1).normalize().multiplyScalar(cameraDist));
+                controls.target.copy(center);
+            }
+        }
+
+        function loadJSONFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    document.getElementById('io-textarea').value = JSON.stringify(json, null, 2);
+                } catch (err) { alert("Invalid JSON format."); }
+            };
+            reader.onerror = () => alert("Failed to read file.");
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function init() {
+            const container = document.getElementById('renderer-container');
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x1a1a1a);
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 5000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            scene.add(new THREE.AmbientLight(0xcccccc, 0.7));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(50, 50, 50); scene.add(dirLight);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            cubeGroup = new THREE.Group(); helperGroup = new THREE.Group();
+            scene.add(cubeGroup); scene.add(helperGroup);
+            window.addEventListener('resize', onWindowResize);
+            createFixedHelpers();
+            focusOnScene();
+            animate();
+        }
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+        function onWindowResize() {
+            camera.aspect = renderer.domElement.clientWidth / renderer.domElement.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(renderer.domElement.clientWidth, renderer.domElement.clientHeight);
+        }
+
+        function clearScene() {
+            while (cubeGroup.children.length > 0) cubeGroup.remove(cubeGroup.children[0]);
+            voxelData.clear();
+            focusOnScene();
+        }
+
+        function renderFromInput() {
+            try {
+                const coords = JSON.parse(document.getElementById('io-textarea').value.replace(/'/g, '"'));
+                clearScene();
+                coords.forEach(c => placeVoxel(c[0], c[1], c[2], c[3]));
+                focusOnScene();
+            } catch (e) { alert("Invalid JSON format!"); console.error(e); }
+        }
+
+        function exportAllVoxels() {
+            if (voxelData.size === 0) { alert("Scene is empty."); return; }
+            const output = [];
+            for (const [key, data] of voxelData.entries()) {
+                const [x, y, z] = key.split(',').map(Number);
+                output.push([x, y, z, data]);
+            }
+            document.getElementById('io-textarea').value = JSON.stringify(output, null, 2);
+            alert(`Exported ${output.length} coordinates.`);
+        }
+
+        function getVoxelKey(x, y, z) { return `${x},${y},${z}`; }
+
+        function placeVoxel(x, y, z, color) {
+            removeVoxel(x, y, z);
+            const key = getVoxelKey(x, y, z);
+            voxelData.set(key, color);
+            const material = color === 1 ? blackMaterial : whiteMaterial;
+            const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
+            cube.position.set(x, y, z); cube.name = key;
+            cubeGroup.add(cube);
+        }
+
+        function removeVoxel(x, y, z) {
+            const key = getVoxelKey(x, y, z);
+            if (!voxelData.has(key)) return;
+            voxelData.delete(key);
+            const mesh = cubeGroup.getObjectByName(key);
+            if (mesh) cubeGroup.remove(mesh);
+        }
+
+        init();
+    </script>
+</body>
+</html>

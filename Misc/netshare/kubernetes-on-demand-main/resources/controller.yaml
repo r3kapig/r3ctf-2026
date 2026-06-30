@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  namespace: default
+  labels:
+    app: controller
+spec:
+  replicas: 1
+  strategy:
+    # The controller reserves hostPort 8888 on a single-node management
+    # cluster, so two revisions cannot be scheduled at the same time.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: controller
+  template:
+    metadata:
+      labels:
+        app: controller
+    spec:
+      serviceAccountName: controller
+      containers:
+      - name: controller
+        image: kube-controller
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8888
+          hostPort: 8888
+        env:
+          - name: "APP_DOMAIN"
+            valueFrom:
+              configMapKeyRef:
+                name: "app-domain"
+                key: "domain"
+          # Local validation bypass for the GZCTF team-token signature check.
+          # Set "true" to accept any non-empty token (Ghost-in-the-Chain local test).
+          - name: SKIP_TOKEN_VERIFY
+            valueFrom:
+              configMapKeyRef:
+                name: controller-config
+                key: skip-token-verify
+                optional: true
+          # Host/IP that players reach the per-cluster haproxy on; baked
+          # into the kubeconfig the controller hands back.
+          - name: PUBLIC_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: controller-config
+                key: public-host
+                optional: true
+        volumeMounts:
+          - name: certificate
+            mountPath: /app/resources
+          - name: dokcer-controller
+            mountPath: /var/run/docker.sock
+      volumes:
+        - name: certificate
+          secret:
+            secretName: "domain-cert"
+        - name: dokcer-controller
+          hostPath:
+            path: /var/run/docker.sock
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: controller
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: controller
+  namespace: default
