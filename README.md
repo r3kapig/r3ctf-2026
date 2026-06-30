@@ -15,6 +15,7 @@ This is the `infra` branch, holding the dynamic-challenge build / deploy sources
 | Misc | pewpew | (static attachment) |
 | Misc | Time Capsule | (static attachment) |
 | Pwn | whisper | (local run only) |
+| Pwn | r3map | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/r3map:latest` |
 | Web | P1gROXY | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/p1groxy:latest` |
 
 See [`CHALLENGE.md`](./CHALLENGE.md) for the full list with CPU / memory limits and
