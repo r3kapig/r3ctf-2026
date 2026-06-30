@@ -13,8 +13,9 @@ spectra to bits, from protocols to cubes.
 
 ## Files
 
-- `attachment/` — all challenge artifacts (logs, audio, pcaps, encrypted zips,
-  `Secret.png`, and the `VoxelEditor.html` viewer).
+- `attachment.7z` — packed player handout (logs, audio, pcaps, encrypted zips,
+  `Secret.png`, and the `VoxelEditor.html` viewer). Extract with
+  `7zz x attachment.7z` to get the `attachment/` directory.
 
 ---
 

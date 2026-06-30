@@ -1,0 +1,9 @@
+whisper-local-stack.7z — whisper 题目的选手附件（本地复现栈，约 481 MB）。
+
+由于体积超过 GitHub 100MB 上限，不直接存放在本仓库。
+
+下载地址（网盘）：<待补充 / TODO: add cloud-storage link>
+
+下载后解压：
+    7zz x whisper-local-stack.7z
+    cd whisper-local-stack && ./run.sh
