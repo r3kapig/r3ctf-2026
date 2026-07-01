@@ -7,17 +7,6 @@ if [ -z "${WHISPER_REAL_FLAG:-}" ]; then
 fi
 export WHISPER_REAL_FLAG
 
-if [ -z "${WHISPER_FLAG_KEY:-}" ]; then
-    if [ -f .flag_key ]; then
-        WHISPER_FLAG_KEY="$(cat .flag_key)"
-    else
-        WHISPER_FLAG_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(24))')"
-        printf '%s' "${WHISPER_FLAG_KEY}" > .flag_key && chmod 600 .flag_key
-    fi
-fi
-export WHISPER_FLAG_KEY
-export WHISPER_FLAG_TEMPLATE="${WHISPER_FLAG_TEMPLATE:-whisper-rcard-0click}"
-
 export WHISPER_ADMIN_TOKEN="${WHISPER_ADMIN_TOKEN:-ctf-admin-token-7a4p1vq0}"
 export WHISPER_WEB_PORT="${WHISPER_WEB_PORT:-31337}"
 export WHISPER_BACKEND_PORT="${WHISPER_BACKEND_PORT:-31338}"
@@ -146,9 +135,8 @@ if $DC -f docker-compose.yml -f "${GEN_FILE}" logs "${FIRST_VICTIM}" 2>/dev/null
     echo "      pool:    ${WHISPER_MAX_INSTANCES} victim runner(s)"
     echo "      tokens:  config/teams.json"
     echo
-    echo "[run] FLAG KEY (set this same value in your scoring platform's flag checker;"
-    echo "      keep it secret -- anyone with it can forge every team's flag):"
-    echo "        WHISPER_FLAG_KEY=${WHISPER_FLAG_KEY}"
+    echo "[run] Model B: spawn one auth-pod per team (see auth-pod/README.md); each pod"
+    echo "      pushes its team's flag to the judge at ${WHISPER_WEB_PORT}."
 else
     echo "[run] ${FIRST_VICTIM} did not report READY in time; check:"
     echo "      $DC -f docker-compose.yml -f ${GEN_FILE} logs ${FIRST_VICTIM}"

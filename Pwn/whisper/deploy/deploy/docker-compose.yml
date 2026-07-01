@@ -68,11 +68,11 @@ services:
       WHISPER_RESET_SCRIPT: "${WHISPER_RESET_SCRIPT:-}"
       JUDGE_HOST: "0.0.0.0"
       JUDGE_PORT: "8080"
-      WHISPER_FLAG_TEMPLATE: "${WHISPER_FLAG_TEMPLATE:-whisper-rcard-0click}"
-      WHISPER_FLAG_KEY: "${WHISPER_FLAG_KEY:-wh1sper-st3go-2026}"
+      TEAM_FLAGS_FILE: "/data/team_flags.json"
     volumes:
       - ./config/teams.json:/config/teams.json:ro
       - ../dist:/app/dist:ro
+      - judge-data:/data
     expose:
       - "8080"
     depends_on:
@@ -87,3 +87,4 @@ services:
 
 volumes:
   backend-data:
+  judge-data:
