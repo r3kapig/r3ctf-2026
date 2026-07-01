@@ -3,7 +3,7 @@ services:
   proxy:
     image: nginx:1.25-alpine
     ports:
-      - "${WHISPER_WEB_PORT:-31337}:80"
+      - "${WHISPER_WEB_PORT:-21801}:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -26,7 +26,7 @@ services:
     expose:
       - "8000"
     ports:
-      - "${WHISPER_BACKEND_PORT:-8000}:8000"
+      - "${WHISPER_BACKEND_PORT:-21802}:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -52,7 +52,7 @@ services:
       WHISPER_MAX_RCARD_BYTES: "4194304"
       WHISPER_POOL: "${WHISPER_POOL:-[]}"
       PUBLIC_IP: "${PUBLIC_IP:-}"
-      PUBLIC_BACKEND_PORT: "${WHISPER_BACKEND_PORT:-8000}"
+      PUBLIC_BACKEND_PORT: "${WHISPER_BACKEND_PORT:-21802}"
       PUBLIC_BACKEND_URL: "${PUBLIC_BACKEND_URL:-}"
       LEASE_SECONDS: "${LEASE_SECONDS:-900}"
       LEASE_RATE_MAX: "${LEASE_RATE_MAX:-5}"
