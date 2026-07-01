@@ -2,8 +2,7 @@
 
 > Whisper — your messages stay private. Your phone, less so.
 
-0-click Android exploitation challenge. A production-grade messaging app on a
-custom AOSP/Cuttlefish image. No victim interaction required.
+A production-grade Android messaging app on a custom AOSP/Cuttlefish image.
 
 Flag format: `R3CTF{...}`
 

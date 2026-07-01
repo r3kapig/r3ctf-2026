@@ -2,17 +2,7 @@ name: Whisper
 author: lawbyte
 category: pwn
 
-description: |-
-  Whisper — your messages stay private. Your phone, less so.
-
-  A 0-click Android exploitation challenge. Whisper is a
-  private messenger that genuinely works: register, add a contact, chat in
-  real time. You get the APK and a local copy of the device to practice
-  against. The real target is live. Land a message and take the phone.
-
-  The flag lives where only root can read it. No victim interaction required.
-
-  Flag format: R3CTF{...}
+description: 'Your messages stay private. Your phone, less so.'
 
 # Per-team dynamic flag. Each leased victim instance is provisioned with a
 # flag unique to the team; the scoring platform validates it with the same
