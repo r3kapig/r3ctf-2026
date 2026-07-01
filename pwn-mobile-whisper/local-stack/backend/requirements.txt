@@ -1,0 +1,22 @@
+# Core framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+websockets>=10.0
+
+# Data
+sqlalchemy>=2.0.0
+
+# HTTP client (for smoke tests and judge)
+httpx>=0.24.0
+
+# Auth / crypto
+python-jose[cryptography]>=3.3.0
+PyJWT>=2.0.0
+cryptography>=3.0.0
+
+# Utilities
+python-dotenv>=0.21.0
+aiofiles>=22.0.0
+
+# Note: python-multipart is NOT required.
+# Attachment upload uses raw request body (Content-Type + X-Filename + X-Kind headers).

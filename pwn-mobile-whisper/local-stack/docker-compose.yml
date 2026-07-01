@@ -1,0 +1,50 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      WHISPER_CTF_MODE: "1"
+      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token}"
+      WHISPER_DATA_DIR: /app/data
+      WHISPER_HOST: "0.0.0.0"
+      WHISPER_PORT: "8000"
+    volumes:
+      - backend-data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  victim:
+    build:
+      context: ./victim-runner
+      dockerfile: Dockerfile
+    privileged: true
+    devices:
+      - /dev/kvm:/dev/kvm
+    environment:
+      BACKEND_HOST: "backend"
+      BACKEND_PORT: "8000"
+      BACKEND_URL: "http://backend:8000"
+      VICTIM_HANDLE: "${VICTIM_HANDLE:-victim}"
+      VICTIM_PHONE: "${VICTIM_PHONE:-+15550000}"
+      VICTIM_DISPLAY: "Whisper Victim"
+      AVD_NAME: "whisper_victim"
+      RUNNER_HOST: "0.0.0.0"
+      RUNNER_PORT: "9090"
+      SYSTEM_IMG_PATH: "${SYSTEM_IMG_PATH:-/mnt/system.img}"
+    volumes:
+      - "${LOCAL_SYSTEM_IMG:-./system.img}:/mnt/system.img:ro"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend-data:

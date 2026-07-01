@@ -1,0 +1,89 @@
+services:
+
+  proxy:
+    image: nginx:1.25-alpine
+    ports:
+      - "${WHISPER_WEB_PORT:-31337}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - judge-web
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      WHISPER_CTF_MODE: "1"
+      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token}"
+      WHISPER_DATA_DIR: /app/data
+      WHISPER_HOST: "0.0.0.0"
+      WHISPER_PORT: "8000"
+    volumes:
+      - backend-data:/app/data
+    expose:
+      - "8000"
+    ports:
+      - "${WHISPER_BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  judge-web:
+    build:
+      context: ../judge
+      dockerfile: Dockerfile
+    environment:
+      WHISPER_BACKEND_URL: "http://backend:8000"
+      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token}"
+      WHISPER_REAL_FLAG: "${WHISPER_REAL_FLAG}"
+      WHISPER_VICTIM_HANDLE: "${WHISPER_VICTIM_HANDLE:-victim-1}"
+      WHISPER_ATTACKER_PHONE: "${WHISPER_ATTACKER_PHONE:-+15559001}"
+      WHISPER_ATTACKER_HANDLE: "${WHISPER_ATTACKER_HANDLE:-judge_attacker}"
+      WHISPER_ATTACKER_PASSWORD: "${WHISPER_ATTACKER_PASSWORD:-judge-att-wh1sper-2026}"
+      WHISPER_VICTIM_PASSWORD: "${WHISPER_VICTIM_PASSWORD:-v1ct1m-wh1sper-2026}"
+      WHISPER_SCAN_PASSWORD: "${WHISPER_SCAN_PASSWORD:-judge-scan-wh1sper-2026}"
+      WHISPER_ATTEMPT_TIMEOUT: "${WHISPER_ATTEMPT_TIMEOUT:-120}"
+      WHISPER_MAX_RCARD_BYTES: "4194304"
+      WHISPER_POOL: "${WHISPER_POOL:-[]}"
+      PUBLIC_IP: "${PUBLIC_IP:-}"
+      PUBLIC_BACKEND_PORT: "${WHISPER_BACKEND_PORT:-8000}"
+      PUBLIC_BACKEND_URL: "${PUBLIC_BACKEND_URL:-}"
+      LEASE_SECONDS: "${LEASE_SECONDS:-900}"
+      LEASE_RATE_MAX: "${LEASE_RATE_MAX:-5}"
+      LEASE_COOLDOWN_SECONDS: "${LEASE_COOLDOWN_SECONDS:-60}"
+      INSTANCE_BOOT_DEADLINE_SECS: "${INSTANCE_BOOT_DEADLINE_SECS:-1200}"
+      INSTANCE_BOOT_TYPICAL_SECS: "${INSTANCE_BOOT_TYPICAL_SECS:-600}"
+      WHISPER_TEAMS_FILE: "/config/teams.json"
+      WHISPER_TEMPLATE_APK: "/app/dist/whisper.apk"
+      JUDGE_DEBUG_KEYSTORE: "/opt/android-tools/debug.keystore"
+      JUDGE_KEYSTORE_PASS: "android"
+      JUDGE_SESSION_SECRET: "${JUDGE_SESSION_SECRET:-changeme-session-secret}"
+      WHISPER_CF_RUNNER_URL: "${WHISPER_CF_RUNNER_URL:-}"
+      WHISPER_RESET_SCRIPT: "${WHISPER_RESET_SCRIPT:-}"
+      JUDGE_HOST: "0.0.0.0"
+      JUDGE_PORT: "8080"
+      WHISPER_FLAG_TEMPLATE: "${WHISPER_FLAG_TEMPLATE:-whisper-rcard-0click}"
+      WHISPER_FLAG_KEY: "${WHISPER_FLAG_KEY:-changeme-set-via-run-sh}"
+    volumes:
+      - ./config/teams.json:/config/teams.json:ro
+      - ../dist:/app/dist:ro
+    expose:
+      - "8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  backend-data:

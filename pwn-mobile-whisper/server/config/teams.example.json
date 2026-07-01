@@ -1,0 +1,19 @@
+{
+  "teams": [
+    {
+      "id": 1,
+      "token": "team1_secret_token_replace_me_64hex_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1",
+      "name": "Team Alpha"
+    },
+    {
+      "id": 2,
+      "token": "team2_secret_token_replace_me_64hex_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2",
+      "name": "Team Beta"
+    },
+    {
+      "id": 3,
+      "token": "team3_secret_token_replace_me_64hex_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa3",
+      "name": "Team Gamma"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+# Large device image (distributed separately with the player bundle)
+system.img
+local-stack/system.img
+
+# Secrets and per-deploy config
+server/.flag_key
+server/config/teams.json
+
+# Auto-generated at run time
+server/docker-compose.victims.gen.yml
+
+# Runtime state
+*.db
+data/
+.venv/
+__pycache__/
+*.pyc
