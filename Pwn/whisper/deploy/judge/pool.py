@@ -8,7 +8,6 @@ from collections import deque
 from typing import Optional
 
 import requests
-import flag_stego
 import team_flags
 
 logger = logging.getLogger("judge_pool")
@@ -163,16 +162,13 @@ def _do_assign(team: str, instance: dict, team_id: int | None = None):
     team_flag = None
     if team_id is not None:
         team_flag = team_flags.get(team_id)
-        if team_flag is not None:
-            logger.info("Using platform-pushed flag for team_id=%s", team_id)
-        else:
-            try:
-                team_flag = flag_stego.make_flag(team_id)
-            except Exception as exc:
-                logger.error("flag_stego.make_flag(%s) failed: %s", team_id, exc)
-                raise RuntimeError(
-                    "per-team flag generation failed (team_id=%s): %s" % (team_id, exc)
-                ) from exc
+        if team_flag is None:
+            logger.error(
+                "No flag pushed for team_id=%s; auth pod must POST /admin/flags before lease",
+                team_id,
+            )
+            raise RuntimeError(f"no flag pushed for team_id={team_id}")
+        logger.info("Using platform-pushed flag for team_id=%s", team_id)
 
     lease_password = secrets.token_hex(16)
 

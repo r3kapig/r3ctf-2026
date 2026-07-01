@@ -1,9 +1,9 @@
-"""Per-team flags pushed by an external party (Model B: per-team auth pod).
+"""Per-team flags pushed by the per-team auth pod (Model B).
 
-In Model B the platform (or a per-team auth pod) generates each team's flag and
-pushes it to the judge via POST /admin/flags. When set, the pushed flag takes
-precedence over the judge's own flag_stego.make_flag() for that team, so the
-victim's /flag.txt matches the flag the scoring platform expects.
+The auth pod is the SOLE source of each team's flag: it pushes the flag to the
+judge via POST /admin/flags before the team can lease a victim. The judge no
+longer generates flags itself — a lease for a team with no pushed flag is refused.
+The victim's /flag.txt therefore matches the flag the scoring platform expects.
 """
 import threading
 

@@ -9,7 +9,6 @@ import threading
 import queue
 
 import requests
-import flag_stego
 import team_flags
 from whisper_deliver import register_account, poll_messages
 
@@ -33,23 +32,12 @@ def _flag_accepted(candidate: str, team_id: int | None = None) -> bool:
 
     if team_id is not None:
         pushed = team_flags.get(team_id)
-        if pushed is not None:
-            # Model B: flag was pushed by the platform; it is authoritative for
-            # this team (flag_stego cannot decode it).
-            return candidate == pushed
-        try:
-            embedded = flag_stego.flag_team_id(candidate)
-        except ValueError:
-            logger.warning("Flag decode error (tampered/foreign UUID): rejecting")
+        if pushed is None:
+            logger.error("No flag pushed for team_id=%s; rejecting", team_id)
             return False
-        if embedded != team_id:
-            logger.warning(
-                "Flag team mismatch: embedded=%s, submitting_team=%s -- "
-                "possible flag sharing, rejecting",
-                embedded, team_id,
-            )
-            return False
-        return True
+        # Model B: flag was pushed by the auth pod; it is authoritative for the
+        # team. The scoring platform does flag-sharing / stegano validation.
+        return candidate == pushed
 
     if REAL_FLAG:
         return candidate == REAL_FLAG

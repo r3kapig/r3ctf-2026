@@ -34,12 +34,18 @@ player ────────────────────────�
 docker build -t whisper-auth-pod .
 docker run --rm -p 5000:5000 \
   -e TEAM_ID=1 -e TEAM_TOKEN=<team-token> -e POD_TOKEN=<random> \
-  -e WHISPER_JUDGE_URL=http://whisper-judge:8080 \
-  -e WHISPER_BACKEND_URL=http://backend.example.com \
+  -e WHISPER_JUDGE_URL=http://vm.ctf2016.r3kapig.com:21801 \
+  -e WHISPER_BACKEND_URL=http://vm.ctf2016.r3kapig.com:21802 \
   -e WHISPER_ADMIN_TOKEN=<admin> -e FLAG='R3CTF{...}' \
   whisper-auth-pod
 ```
 
+Production endpoints (Model B):
+
+- judge (internal, pod-only): `http://vm.ctf2016.r3kapig.com:21801`
+- backend (public, baked into APK): `http://vm.ctf2016.r3kapig.com:21802`
+
 The platform (ret.sh / kubernetes-on-demand) spawns one pod per team with the
 per-team `TEAM_ID` / `TEAM_TOKEN` / `POD_TOKEN` / `FLAG`, and hands the player the
-pod URL + `POD_TOKEN`.
+pod URL + `POD_TOKEN`. `WHISPER_JUDGE_URL` / `WHISPER_BACKEND_URL` /
+`WHISPER_ADMIN_TOKEN` are shared across all team pods.

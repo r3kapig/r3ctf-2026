@@ -17,6 +17,8 @@ Optional env:
 """
 import os
 import sys
+import time
+import uuid
 import logging
 
 import requests
@@ -40,7 +42,7 @@ POD_TOKEN     = _need("POD_TOKEN")
 JUDGE_URL     = _need("WHISPER_JUDGE_URL").rstrip("/")
 BACKEND_URL   = _need("WHISPER_BACKEND_URL").rstrip("/")
 ADMIN_TOKEN   = os.environ.get("WHISPER_ADMIN_TOKEN", "").strip()
-FLAG          = os.environ.get("FLAG", "").strip()
+FLAG          = os.environ.get("FLAG", "").strip() or f"R3CTF{{{uuid.uuid4().hex}}}"
 
 app = Flask(__name__)
 
@@ -57,22 +59,31 @@ def _team_headers() -> dict:
     return {"X-Team-Token": TEAM_TOKEN}
 
 
-def push_flag() -> None:
-    if not FLAG or not ADMIN_TOKEN:
-        if FLAG:
-            logger.warning("FLAG set but WHISPER_ADMIN_TOKEN missing; cannot push flag")
-        return
-    try:
-        resp = requests.post(
-            f"{JUDGE_URL}/admin/flags",
-            json={"team_id": TEAM_ID, "flag": FLAG},
-            headers={"X-Admin-Token": ADMIN_TOKEN},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        logger.info("pushed flag to judge for team_id=%s", TEAM_ID)
-    except Exception as exc:
-        logger.error("flag push failed: %s", exc)
+def push_flag() -> bool:
+    """Push this team's flag to the judge. Retries; returns True on success.
+
+    The pod is the sole source of the team's flag, so this must succeed before
+    the team can lease a victim. It is idempotent and safe to call repeatedly.
+    """
+    if not ADMIN_TOKEN:
+        logger.error("WHISPER_ADMIN_TOKEN missing; cannot push flag")
+        return False
+    for attempt in range(1, 8):
+        try:
+            resp = requests.post(
+                f"{JUDGE_URL}/admin/flags",
+                json={"team_id": TEAM_ID, "flag": FLAG},
+                headers={"X-Admin-Token": ADMIN_TOKEN},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            logger.info("pushed flag to judge for team_id=%s (attempt %d)", TEAM_ID, attempt)
+            return True
+        except Exception as exc:
+            logger.warning("flag push attempt %d failed: %s", attempt, exc)
+            time.sleep(min(2 * attempt, 10))
+    logger.error("flag push failed after retries for team_id=%s", TEAM_ID)
+    return False
 
 
 def _proxy(method: str, path: str):
@@ -106,6 +117,12 @@ def index():
 
 @app.route("/lease", methods=["POST"])
 def lease():
+    if not _authorized():
+        return jsonify({"error": "forbidden"}), 403
+    # Guarantee the judge has this team's flag before it leases a victim
+    # (the judge refuses a lease for a team with no pushed flag).
+    if not push_flag():
+        return jsonify({"error": "could not register flag with judge; try again"}), 503
     return _proxy("POST", "/lease")
 
 
