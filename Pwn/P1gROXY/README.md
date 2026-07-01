@@ -1,6 +1,6 @@
 # P1gROXY
 
-- **Category:** Web
+- **Category:** Pwn
 - **Author:** 
 - **Points:** 
 - **Solves:** 
