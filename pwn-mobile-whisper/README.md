@@ -33,6 +33,13 @@ the scoring platform's flag checker so per-team flags validate.
 ## Player device image
 
 `local-stack/` needs `system.img` (~1.6 GB), the prebuilt local device. It is
-distributed as a separate download with the player bundle, not tracked in git.
-Place it at `local-stack/system.img` (or run `local-stack/setup.sh`, which copies
-it in) before `local-stack/run.sh`.
+too large for git, so it is hosted separately:
+
+https://drive.google.com/drive/folders/1E7puSgXLNHnUFKPCSPcGwDNFS5kVXrdG?usp=sharing
+
+Download it, place it at `local-stack/system.img` (or drop it beside the bundle
+and run `local-stack/setup.sh`, which copies it in), then run
+`local-stack/run.sh`.
+
+The player handout is the `local-stack/` directory zipped together with this
+`system.img`.

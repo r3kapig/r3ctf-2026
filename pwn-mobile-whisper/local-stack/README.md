@@ -7,6 +7,8 @@ device. The local `/flag.txt` holds a placeholder value.
 
 - Linux x86_64 host with KVM (`ls /dev/kvm` must exist)
 - Docker + Docker Compose v2, ~4 GB free RAM
+- `system.img` present in this directory (shipped with this bundle; if it is
+  alongside the bundle instead, `./setup.sh` copies it into place)
 
 ## Run
 
