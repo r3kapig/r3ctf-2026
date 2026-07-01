@@ -209,9 +209,14 @@ git push origin infra        # infra 分支已 set-upstream
   `docker tag trusted-hash-portal:local <reg>/trustedhash:latest && docker push`，
   不要重新跑 Nix 构建（`buildx --allow security.insecure` + 完整 NixOS，半小时以上且易失败）。
 
-### 8.5 whisper 不构建 / 不 push
+### 8.5 whisper 部署
 
-- whisper 只本地跑通：`cd deploy && ./run.sh <public-ip> [N]`（N = 并发设备上限）。
+- whisper 不 push 镜像，只在 KVM 主机上跑：`cd deploy/deploy && ./run.sh <public-ip> [N]`
+  （N = 并发设备上限）。现部署在 `vm.ctf2026.r3kapig.com`。
+- victim 镜像 build 拉 debian base 时会被 docker.io 的 CloudFront CDN 在境内 reset；
+  用 daocloud mirror 拉好 base 镜像并 tag 成官方名：`docker pull
+  docker.m.daocloud.io/library/debian:bookworm-slim && docker tag
+  docker.m.daocloud.io/library/debian:bookworm-slim debian:bookworm-slim`（nginx 同理）。
 - 它的 481M `whisper-local-stack.7z` 走网盘（见 `.gitignore` + 占位 `.txt`）。
 
 ### 8.6 `docker compose config` 报 FLAG required
@@ -222,7 +227,34 @@ git push origin infra        # infra 分支已 set-upstream
 
 ---
 
-## 9. 参考资料
+## 9. whisper Model B（per-team auth pod）
+
+把 judge 藏起来、给每队一个 pod 作为唯一入口：
+
+```
+player ──X-Pod-Token──► auth pod ──X-Team-Token──► judge (internal)
+player ───────────────────────────────────────────► backend (public, in APK)
+```
+
+- **judge 改动**（已做）：
+  - `team_flags.py`：存 platform 推来的 per-team flag。
+  - `POST /admin/flags`（admin 鉴权）：auth pod 启动时把 flag 推到这里。
+  - `pool._do_assign`：优先用 `team_flags.get(team_id)`，否则回退 `make_flag`。
+  - `worker._flag_accepted`：有 pushed flag 时直接比对，否则走 flag_stego 解码。
+- **auth pod**（`Pwn/whisper/auth-pod/`）：
+  - 环境：`TEAM_ID` / `TEAM_TOKEN`（teams.json）/ `POD_TOKEN`（随机）/
+    `WHISPER_JUDGE_URL`（内网）/ `WHISPER_BACKEND_URL`（公网）/
+    `WHISPER_ADMIN_TOKEN` / 可选 `FLAG`。
+  - 启动推 flag，运行时代理 `lease / release / status / download/whisper.apk`。
+- **部署**：judge + backend + victim pool 用 `deploy/deploy/run.sh` 起（judge 不暴露）；
+  平台（ret.sh / k8s-on-demand）每队起一个 auth-pod，给选手 pod URL + `POD_TOKEN`。
+- backend 必须公网暴露（APK 直连），judge 必须内网（只让 pod 访问）。
+
+详见 `Pwn/whisper/README.md` 和 `Pwn/whisper/auth-pod/README.md`。
+
+---
+
+## 10. 参考资料
 
 - `reference/creating-ctf-docker/SKILL.md` —— 本题仓库采用的约定来源（flag 注入、
   xinetd/socat/直接监听选型、各分类 skeleton）。

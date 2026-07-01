@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>whisper — team {{ team_id }}</title>
+  <style>
+    body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; max-width: 720px;
+           margin: 40px auto; padding: 0 20px; color: #1d1d1f; }
+    code, pre { background: #f5f5f7; padding: 2px 6px; border-radius: 6px; }
+    pre { padding: 14px; overflow-x: auto; }
+    button { font-size: 15px; padding: 8px 16px; border: 0; border-radius: 8px;
+             background: #0071e3; color: #fff; cursor: pointer; margin-right: 8px; }
+    button.secondary { background: #86868b; }
+    #status { margin-top: 16px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>whisper — team {{ team_id }}</h1>
+  <p>Messenger backend (point your APK here):</p>
+  <pre>{{ backend_url }}</pre>
+
+  <p>
+    <button onclick="call('/lease')">Lease a victim</button>
+    <button class="secondary" onclick="call('/release')">Release</button>
+    <button class="secondary" onclick="call('/status', 'GET')">Refresh status</button>
+    <a href="/download/whisper.apk?token={{ request.args.get('token', '') }}">
+      <button class="secondary">Download whisper.apk</button></a>
+  </p>
+
+  <h3>Status</h3>
+  <pre id="status">—</pre>
+
+  <script>
+    const token = new URLSearchParams(location.search).get('token') ||
+                  localStorage.getItem('pod_token') || '';
+    localStorage.setItem('pod_token', token);
+    async function call(path, method = 'POST') {
+      const r = await fetch(path, { method, headers: { 'X-Pod-Token': token } });
+      document.getElementById('status').textContent = JSON.stringify(await r.json(), null, 2);
+    }
+    call('/status', 'GET');
+  </script>
+</body>
+</html>

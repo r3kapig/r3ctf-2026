@@ -10,6 +10,7 @@ import queue
 
 import requests
 import flag_stego
+import team_flags
 from whisper_deliver import register_account, poll_messages
 
 logger = logging.getLogger("judge_worker")
@@ -31,6 +32,11 @@ def _flag_accepted(candidate: str, team_id: int | None = None) -> bool:
         return False
 
     if team_id is not None:
+        pushed = team_flags.get(team_id)
+        if pushed is not None:
+            # Model B: flag was pushed by the platform; it is authoritative for
+            # this team (flag_stego cannot decode it).
+            return candidate == pushed
         try:
             embedded = flag_stego.flag_team_id(candidate)
         except ValueError:

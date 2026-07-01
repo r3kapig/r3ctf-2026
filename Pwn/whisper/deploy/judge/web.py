@@ -15,6 +15,7 @@ import uvicorn
 
 import worker as judge_worker
 import pool as judge_pool
+import team_flags
 from pool import _RateLimitError
 
 logging.basicConfig(level=logging.INFO)
@@ -337,6 +338,19 @@ async def submit(request: Request):
     except Exception:
         raise HTTPException(status_code=503, detail="Queue full; try again later")
     return JSONResponse({"attempt_id": attempt_id, "status": "queued"})
+
+@app.post("/admin/flags")
+async def admin_set_flag(request: Request):
+
+    # Model B: a per-team auth pod pushes its team's flag here so the victim
+    # uses the platform-generated flag (validated by the scoring platform).
+    _require_admin(request)
+    body = await request.json()
+    team_id = int(body["team_id"])
+    flag = str(body["flag"])
+    team_flags.set(team_id, flag)
+    logger.info("admin_set_flag: team_id=%s (flag redacted)", team_id)
+    return JSONResponse({"ok": True, "team_id": team_id})
 
 @app.get("/result/{attempt_id}")
 def get_result(attempt_id: str):

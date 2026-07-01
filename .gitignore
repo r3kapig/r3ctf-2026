@@ -13,3 +13,7 @@
 #   uncompressed dir is kept local only.
 /Pwn/whisper/attachment/whisper-local-stack.7z
 /Misc/Time Capsule/attachment/
+
+# python
+__pycache__/
+*.pyc
