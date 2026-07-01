@@ -1,4 +1,0 @@
-services:
-  backend:
-    ports:
-      - "${WHISPER_BACKEND_PORT:-8000}:8000"
