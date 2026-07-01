@@ -1,4 +1,4 @@
-"""Per-team flags pushed by the per-team auth pod (Model B).
+"""Per-team flags pushed by the per-team auth pod.
 
 The auth pod is the SOLE source of each team's flag: it pushes the flag to the
 judge via POST /admin/flags before the team can lease a victim. The judge no

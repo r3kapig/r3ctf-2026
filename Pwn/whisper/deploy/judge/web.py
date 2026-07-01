@@ -342,8 +342,8 @@ async def submit(request: Request):
 @app.post("/admin/flags")
 async def admin_set_flag(request: Request):
 
-    # Model B: a per-team auth pod pushes its team's flag here so the victim
-    # uses the platform-generated flag (validated by the scoring platform).
+    # A per-team auth pod pushes its team's flag here so the victim uses the
+    # platform-generated flag (validated by the scoring platform).
     _require_admin(request)
     body = await request.json()
     team_id = int(body["team_id"])

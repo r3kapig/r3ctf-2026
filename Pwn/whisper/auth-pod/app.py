@@ -1,4 +1,4 @@
-"""whisper per-team auth pod (Model B).
+"""whisper per-team auth pod.
 
 One pod is spawned per team. Players authenticate to THIS pod with POD_TOKEN;
 the pod talks to the (internal) whisper judge on the team's behalf. The judge is

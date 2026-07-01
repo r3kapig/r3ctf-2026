@@ -35,8 +35,8 @@ def _flag_accepted(candidate: str, team_id: int | None = None) -> bool:
         if pushed is None:
             logger.error("No flag pushed for team_id=%s; rejecting", team_id)
             return False
-        # Model B: flag was pushed by the auth pod; it is authoritative for the
-        # team. The scoring platform does flag-sharing / stegano validation.
+        # The flag was pushed by the auth pod and is authoritative for the team;
+        # the scoring platform handles flag-sharing / stegano validation.
         return candidate == pushed
 
     if REAL_FLAG:
