@@ -117,12 +117,6 @@ def index():
 
 @app.route("/lease", methods=["POST"])
 def lease():
-    if not _authorized():
-        return jsonify({"error": "forbidden"}), 403
-    # Guarantee the judge has this team's flag before it leases a victim
-    # (the judge refuses a lease for a team with no pushed flag).
-    if not push_flag():
-        return jsonify({"error": "could not register flag with judge; try again"}), 503
     return _proxy("POST", "/lease")
 
 
