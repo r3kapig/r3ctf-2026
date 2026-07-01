@@ -1,0 +1,47 @@
+name: Whisper
+author: lawbyte
+category: pwn
+
+description: |-
+  Whisper — your messages stay private. Your phone, less so.
+
+  An insane-difficulty 0-click Android exploitation challenge. Whisper is a
+  private messenger that genuinely works: register, add a contact, chat in
+  real time. You get the APK and a local copy of the device to practice
+  against. The real target is live. Land a message and take the phone.
+
+  The flag lives where only root can read it. No victim interaction required.
+
+  Flag format: R3CTF{...}
+
+# Per-team dynamic flag. Each leased victim instance is provisioned with a
+# flag unique to the team; the scoring platform validates it with the same
+# WHISPER_FLAG_KEY the deploy prints at startup (a shared flag decodes to the
+# origin team, so flag-sharing is detectable). No static flag is stored here.
+flags:
+  - type: regex
+    content: '^R3CTF\{[0-9a-f-]+\}$'
+
+# Dynamic scoring. Adjust to the event's curve before publishing.
+type: dynamic
+value: 500
+extra:
+  initial: 500
+  minimum: 100
+  decay: 20
+
+tags:
+  - pwn
+  - mobile
+  - android
+
+# Live, per-team on-demand instance (Cuttlefish victim behind the judge).
+# Set the public host/port at deploy time.
+connection_info: "http://CHANGE_ME:31337"
+
+# Player handout. system.img (~1.6 GB) ships as a separate download, not in git.
+files:
+  - local-stack/victim-runner/whisper.apk
+
+state: hidden
+version: "0.1"
