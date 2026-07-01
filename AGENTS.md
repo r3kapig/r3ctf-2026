@@ -139,7 +139,7 @@ ssh r3kapig@ops.ctf2026.r3kapig.com \
 |---|---|---|---|---|---|
 | Crypto | HEuristic | `…/heuristic:latest` | 0.5 | 256m | SEAL CKKS，构建较慢 |
 | Web | P1gROXY | `…/p1groxy:latest` | 0.1 | 128m | C++ 反代 + Flask |
-| Misc | fw-vpn | `…/fw-vpn:latest` | 0.1 | 128m | SSL VPN + SOCKS5，多服务 compose |
+| Pwn | pwn-eazyvpn | `…/pwn-eazyvpn:latest` | 0.1 | 128m | TLS VPN + SOCKS5 pivot |
 | Misc | netshare | `…/netshare:latest` | 0.5 | 256m | push 的是 bridge pod；控制器需 `network_mode: host` + `/var/run/docker.sock` |
 | Misc | trustedhash | `…/trustedhash:latest` | 1.0 | 2g | portal 镜像（7.57G），运行需 `--privileged` + KVM |
 | Pwn | r3map | `…/r3map:latest` | 2.0 | 3g | kernel pwn，QEMU/KVM，运行需 `--device /dev/kvm` + `seccomp=unconfined` |

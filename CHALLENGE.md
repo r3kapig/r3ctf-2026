@@ -6,7 +6,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 
 | 类型 | 名字 | 镜像名 | CPU | 内存 | 状态 |
 |---|---|---|---|---|---|
-| Misc | fw-vpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/fw-vpn:latest` | 0.1 | 128m | pushed ✓ |
+| Pwn | pwn-eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/pwn-eazyvpn:latest` | 0.1 | 128m | pushed ✓ |
 | Crypto | HEuristic | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/heuristic:latest` | 0.5 | 256m | pushed ✓ |
 | Web | P1gROXY | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/p1groxy:latest` | 0.1 | 128m | pushed ✓ |
 | Misc | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` | 0.5 | 256m | pushed ✓ |

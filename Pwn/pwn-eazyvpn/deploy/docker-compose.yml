@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  vpn:
+    build: ./
+    ports:
+      - "9000:4433"
+    environment:
+      # Test flag only. On a real platform the orchestrator injects
+      # $FLAG / $GZCTF_FLAG / $DASFLAG per team instance.
+      FLAG: "flag{test_dynamic_flag_eazyvpn}"
+    networks:
+      internal:
+        ipv4_address: 172.20.0.2
+    restart: unless-stopped
+
+  # Internal nginx — reachable only via the VPN tunnel. Decoy / realism.
+  web:
+    image: nginx:alpine
+    networks:
+      internal:
+        ipv4_address: 172.20.0.3
+    restart: unless-stopped
+    
+  api:
+    image: python:3.12-alpine
+    environment:
+      FLAG: "flag{test_dynamic_flag_eazyvpn}"
+    command: >
+      sh -c 'printf "%s\n" "$$FLAG" > /tmp/flag.txt &&
+             cd /tmp && python3 -m http.server 9000 --bind 0.0.0.0'
+    networks:
+      internal:
+        ipv4_address: 172.20.0.4
+    restart: unless-stopped
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
