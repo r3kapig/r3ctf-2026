@@ -8,6 +8,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 |---|---|---|---|---|---|
 | Pwn | pwn-eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/pwn-eazyvpn:latest` | 0.1 | 128m | pushed ✓ |
 | Crypto | HEuristic | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/heuristic:latest` | 0.5 | 256m | pushed ✓ |
+| Crypto | rECp1cG | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/recp1cg:latest` | 0.1 | 128m | pushed ✓ |
 | Pwn | P1gROXY | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/p1groxy:latest` | 0.1 | 128m | pushed ✓ |
 | Misc | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` | 0.5 | 256m | pushed ✓ |
 | Misc | trustedhash | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/trustedhash:latest` | 1.0 | 2g | pushed ✓ |

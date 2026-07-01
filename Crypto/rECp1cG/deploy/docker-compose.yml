@@ -1,0 +1,15 @@
+services:
+  recp1cg:
+    build: .
+    image: recp1cg-remote:latest
+    ports:
+      - "${PORT:-9999}:9999"
+    environment:
+      FLAG: "${FLAG:-r3ctf{test_placeholder}}"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
