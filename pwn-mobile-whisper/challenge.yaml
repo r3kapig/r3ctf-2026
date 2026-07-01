@@ -5,7 +5,7 @@ category: pwn
 description: |-
   Whisper — your messages stay private. Your phone, less so.
 
-  An insane-difficulty 0-click Android exploitation challenge. Whisper is a
+  A 0-click Android exploitation challenge. Whisper is a
   private messenger that genuinely works: register, add a contact, chat in
   real time. You get the APK and a local copy of the device to practice
   against. The real target is live. Land a message and take the phone.
