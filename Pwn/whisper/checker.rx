@@ -10,8 +10,8 @@ const WITH_HYPHEN = true;
 const CASE_SENSITIVE  = true;
 /// the key to initialize the flag encryptor
 const ENCRYPT_KEY = "sVC0d41576SzRQ3fr4cIOz8S";
-/// the flag prefix, the game name for example, `flag` means the flag will be `flag{...}`
-const PREFIX = "flag";
+/// the flag prefix, the game name for example, `r3ctf` means the flag will be `r3ctf{...}`
+const PREFIX = "r3ctf";
 /// the flag hash key, used to generate the uuid content
 const HASH_KEY = "E9iLc9RWD2X0g8Y5E4ulSJB93u6B2BjN";
 
