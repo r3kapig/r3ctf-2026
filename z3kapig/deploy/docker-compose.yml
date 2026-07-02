@@ -1,0 +1,24 @@
+name: z3kapig
+
+services:
+  z3kapig:
+    build:
+      context: .
+    image: z3kapig:latest
+    container_name: z3kapig
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${Z3KAPIG_PORT:-1338}:1337"
+    environment:
+      POW_DIFFICULTY: "${POW_DIFFICULTY:-26}"
+      PROTOCOL_TIMEOUT_SECONDS: "${PROTOCOL_TIMEOUT_SECONDS:-600}"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 2.0

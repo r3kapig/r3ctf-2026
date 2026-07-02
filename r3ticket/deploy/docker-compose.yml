@@ -1,0 +1,21 @@
+name: r3ticket
+
+services:
+  r3ticket:
+    build:
+      context: .
+    image: r3ticket:latest
+    container_name: r3ticket
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${R3TICKET_PORT:-1337}:1337"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0

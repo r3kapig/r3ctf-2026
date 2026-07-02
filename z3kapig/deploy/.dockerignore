@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.env
+docker-compose.yml
+src/solve.py
+src/lll_cvp.py

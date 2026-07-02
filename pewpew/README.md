@@ -9,15 +9,28 @@
 
 ## Description
 
-The spaceship is making noises again.
+Space is hard. Heap feng shui is harder.
 
-Management says this is normal. Engineering says not to press the red buttons. The
-flight computer says everything is perfectly calibrated.
+The captain ejected, the scouts are confused, and the engine insists on reporting
+how many watts it wasted every time you ask it to do anything. The spaceship is
+making noises again — management says this is normal, engineering says not to
+press the red buttons, and the flight computer says everything is perfectly
+calibrated.
 
-Have fun.
+Can you land one perfect shot?
 
-Windows LFH playground. Connect to the remote Windows host (Windows Server 2025) and
-find the flag. A Remote Desktop connection file is provided in `attachment/`.
+A Windows LFH playground on Windows Server 2025. Reverse the supplied binaries,
+then connect to the remote Windows host over RDP and find the flag in `flag.txt`.
+
+> You should NOT bruteforce the service; your exploit should be reliable in
+> fewer than 10 tries.
+
+## Files
+
+- `attachment/to_player.zip` — player handout: `pewpew.exe` plus the Windows
+  DLLs (`KernelBase.dll`, `kernel32.dll`, `ntdll.dll`) for local analysis.
+- `attachment/r3ctf-pewpew.rdp` — RDP connection stub for the remote host.
+- `flag.param.md` — dynamic-flag template + key (platform / checker config).
 
 ## Connection
 
@@ -29,8 +42,5 @@ find the flag. A Remote Desktop connection file is provided in `attachment/`.
 ## Deployment
 
 This challenge points at an externally-hosted Windows VM; there is no local
-container to build. The `.rdp` file in `attachment/` is the full player handout.
-
-## Files
-
-- `attachment/r3ctf-pewpew.rdp` — RDP connection stub for players.
+container to build. The `.rdp` + binaries in `attachment/` are the full player
+handout.
