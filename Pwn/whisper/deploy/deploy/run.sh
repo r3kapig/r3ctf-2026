@@ -76,6 +76,9 @@ for i in $(seq 1 "${WHISPER_MAX_INSTANCES}"); do
       VICTIM_PHONE: \"${VICTIM_PHONE}\"
       VICTIM_DISPLAY: \"Whisper Victim ${i}\"
       AVD_NAME: \"whisper_victim_${i}\"
+      AVD_LCD_WIDTH: \"${AVD_LCD_WIDTH:-480}\"
+      AVD_LCD_HEIGHT: \"${AVD_LCD_HEIGHT:-800}\"
+      AVD_LCD_DENSITY: \"${AVD_LCD_DENSITY:-160}\"
       RUNNER_HOST: \"0.0.0.0\"
       RUNNER_PORT: \"9090\"
     networks:

@@ -229,12 +229,11 @@ log "  AVD '${AVD_NAME}' created."
 # fewer pixels to rasterize per frame (biggest host-CPU drain at idle).
 AVD_CFG="${AVD_HOME}/avd/${AVD_NAME}.avd/config.ini"
 if [[ -f "${AVD_CFG}" ]]; then
-    sed -i '/^hw\.lcd\./d' "${AVD_CFG}"
-    {
-        echo "hw.lcd.width = ${AVD_LCD_WIDTH}"
-        echo "hw.lcd.height = ${AVD_LCD_HEIGHT}"
-        echo "hw.lcd.density = ${AVD_LCD_DENSITY}"
-    } >> "${AVD_CFG}"
+    sed -i \
+        -e "s/^hw\.lcd\.width.*/hw.lcd.width = ${AVD_LCD_WIDTH}/" \
+        -e "s/^hw\.lcd\.height.*/hw.lcd.height = ${AVD_LCD_HEIGHT}/" \
+        -e "s/^hw\.lcd\.density.*/hw.lcd.density = ${AVD_LCD_DENSITY}/" \
+        "${AVD_CFG}"
     log "  LCD set to ${AVD_LCD_WIDTH}x${AVD_LCD_HEIGHT}@${AVD_LCD_DENSITY}dpi (was pixel_4 1080x2280)."
 fi
 
