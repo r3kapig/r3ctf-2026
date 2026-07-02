@@ -17,7 +17,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | definitely-not-a-web-chal | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/definitely-not-a-web-chal:latest` | 0.5 | 256m | pushed ✓ |
 | r3ticket | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/r3ticket:latest` | 1.0 | 512m | pushed ✓ |
 | z3kapig | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/z3kapig:latest` | 2.0 | 1g | pushed ✓ |
-| ploys | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/ploys:latest` | 0.5 | 128m | pushed ✓ |
+| polys | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/polys:latest` | 0.5 | 128m | pushed ✓ |
 
 ## 本地运行 / 纯附件（不 push 镜像）
 

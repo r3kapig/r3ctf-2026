@@ -1,9 +1,9 @@
 services:
-  ploys:
+  polys:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "1337:1337"
     environment:
-      - FLAG=${FLAG:-flag{ploys_demo_flag}}
+      - FLAG=${FLAG:-flag{polys_demo_flag}}

@@ -1,15 +1,15 @@
 CC ?= gcc
 CFLAGS ?= -g -O0
 OBJCOPY ?= objcopy
-OBJCOPYFLAGS ?= --strip-debug --strip-symbol=foo --strip-symbol=ploys --strip-symbol=ploy_degrees
+OBJCOPYFLAGS ?= --strip-debug --strip-symbol=foo --strip-symbol=polys --strip-symbol=poly_degrees
 
-TARGET = ploys
-ATTACHMENT ?= ../attachments/ploys
+TARGET = polys
+ATTACHMENT ?= ../attachments/polys
 
 all: $(TARGET)
 
-$(TARGET): ploys.c seccomp.c
-	$(CC) $(CFLAGS) -o $@ ploys.c
+$(TARGET): polys.c seccomp.c
+	$(CC) $(CFLAGS) -o $@ polys.c
 	$(OBJCOPY) $(OBJCOPYFLAGS) $@
 
 attachment: $(TARGET)

@@ -117,29 +117,29 @@ typedef struct {
     uint8_t reserved[2];
 } degree_t;
 
-#define PLOY_COUNT 0x40
+#define POLY_COUNT 0x40
 #define U8_INDEX_COUNT 0x100
-#define PLOY_ALIAS_INDEX (U8_INDEX_COUNT - 3)
-#define PLOY_DEGREES_OFFSET \
-    (PLOY_ALIAS_INDEX * (sizeof(uint32_t *) - sizeof(degree_t)))
-#define PLOY_DEGREES_GAP \
-    (PLOY_DEGREES_OFFSET - PLOY_COUNT * sizeof(uint32_t *))
-#define PLOY_STORE_INIT_SIZE \
-    (PLOY_DEGREES_OFFSET + PLOY_COUNT * sizeof(degree_t))
+#define POLY_ALIAS_INDEX (U8_INDEX_COUNT - 3)
+#define POLY_DEGREES_OFFSET \
+    (POLY_ALIAS_INDEX * (sizeof(uint32_t *) - sizeof(degree_t)))
+#define POLY_DEGREES_GAP \
+    (POLY_DEGREES_OFFSET - POLY_COUNT * sizeof(uint32_t *))
+#define POLY_STORE_INIT_SIZE \
+    (POLY_DEGREES_OFFSET + POLY_COUNT * sizeof(degree_t))
 
 typedef struct {
-    uint32_t *ploys[PLOY_COUNT];
-    uint8_t degree_gap[PLOY_DEGREES_GAP];
-    degree_t ploy_degrees[PLOY_COUNT];
-} ploy_store_t;
+    uint32_t *polys[POLY_COUNT];
+    uint8_t degree_gap[POLY_DEGREES_GAP];
+    degree_t poly_degrees[POLY_COUNT];
+} poly_store_t;
 
-ploy_store_t foo;
+poly_store_t foo;
 
-uint32_t **ploys = foo.ploys;
-degree_t *ploy_degrees = foo.ploy_degrees;
+uint32_t **polys = foo.polys;
+degree_t *poly_degrees = foo.poly_degrees;
 
 static void init(void) {
-    memset(&foo, 0, PLOY_STORE_INIT_SIZE);
+    memset(&foo, 0, POLY_STORE_INIT_SIZE);
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
     setbuf(stdin, NULL);
@@ -152,7 +152,7 @@ static void read_poly(void) {
     if (!read_uint32(&idx)) {
         return;
     }
-    if (idx >= PLOY_COUNT) {
+    if (idx >= POLY_COUNT) {
         puts("Invalid index");
         return;
     }
@@ -178,9 +178,9 @@ static void read_poly(void) {
         }
         poly[i] = coeff % MOD;
     }
-    ploys[idx] = poly;
-    ploy_degrees[idx] = (degree_t){.degree = (uint8_t)deg + 1};
-    ntt(ploys[idx], N, 0);
+    polys[idx] = poly;
+    poly_degrees[idx] = (degree_t){.degree = (uint8_t)deg + 1};
+    ntt(polys[idx], N, 0);
 }
 
 static void multiply_polys(void) {
@@ -196,28 +196,28 @@ static void multiply_polys(void) {
     }
     uint8_t idx_dest = (uint8_t)tmp;
 
-    if ((int8_t)idx_a >= PLOY_COUNT || (int8_t)idx_dest >= PLOY_COUNT || !ploys[idx_a]) {
+    if ((int8_t)idx_a >= POLY_COUNT || (int8_t)idx_dest >= POLY_COUNT || !polys[idx_a]) {
         puts("Invalid indices");
         return;
     }
 
     uint32_t *f_dest = NULL;
-    if (ploys[idx_dest]) {
-        f_dest = ploys[idx_dest];
+    if (polys[idx_dest]) {
+        f_dest = polys[idx_dest];
     } else {
         f_dest = malloc(N * sizeof(uint32_t));
         f_dest[0] = 1;
         ntt(f_dest, N, 0);
-        ploy_degrees[idx_dest].degree = 1;
+        poly_degrees[idx_dest].degree = 1;
     }
 
-    uint32_t *fa = ploys[idx_a];
-    uint8_t deg_dest = (uint8_t)(ploy_degrees[idx_a].degree + ploy_degrees[idx_dest].degree - 1);
+    uint32_t *fa = polys[idx_a];
+    uint8_t deg_dest = (uint8_t)(poly_degrees[idx_a].degree + poly_degrees[idx_dest].degree - 1);
     for (int i = 0; i < N; ++i) {
         f_dest[i] = (uint32_t)((unsigned long long)fa[i] * f_dest[i] % MOD);
     }
-    ploys[idx_dest] = f_dest;
-    ploy_degrees[idx_dest].degree = deg_dest;
+    polys[idx_dest] = f_dest;
+    poly_degrees[idx_dest].degree = deg_dest;
 }
 
 static void add_polys(void) {
@@ -228,17 +228,17 @@ static void add_polys(void) {
     if (!read_uint32(&idx_a) || !read_uint32(&idx_b) || !read_uint32(&idx_dest)) {
         return;
     }
-    if (idx_a >= PLOY_COUNT || idx_b >= PLOY_COUNT || idx_dest >= PLOY_COUNT ||
-        !ploys[idx_a] || !ploys[idx_b]) {
+    if (idx_a >= POLY_COUNT || idx_b >= POLY_COUNT || idx_dest >= POLY_COUNT ||
+        !polys[idx_a] || !polys[idx_b]) {
         puts("Invalid indices");
         return;
     }
 
-    uint32_t *fa = ploys[idx_a];
-    uint32_t *fb = ploys[idx_b];
+    uint32_t *fa = polys[idx_a];
+    uint32_t *fb = polys[idx_b];
     uint32_t *f_dest = NULL;
-    if (ploys[idx_dest]) {
-        f_dest = ploys[idx_dest];
+    if (polys[idx_dest]) {
+        f_dest = polys[idx_dest];
     } else {
         f_dest = malloc(N * sizeof(uint32_t));
     }
@@ -249,29 +249,29 @@ static void add_polys(void) {
         }
         f_dest[i] = (uint32_t)sum;
     }
-    ploys[idx_dest] = f_dest;
-    ploy_degrees[idx_dest] =
-        (ploy_degrees[idx_a].degree > ploy_degrees[idx_b].degree) ? ploy_degrees[idx_a] : ploy_degrees[idx_b];
+    polys[idx_dest] = f_dest;
+    poly_degrees[idx_dest] =
+        (poly_degrees[idx_a].degree > poly_degrees[idx_b].degree) ? poly_degrees[idx_a] : poly_degrees[idx_b];
 }
 
 static void show_poly(void) {
-    uint32_t ploy_tmp[N];
+    uint32_t poly_tmp[N];
     uint32_t idx;
 
     if (!scan_uint32(&idx)) {
         return;
     }
-    if (idx >= PLOY_COUNT || !ploys[idx]) {
+    if (idx >= POLY_COUNT || !polys[idx]) {
         puts("Invalid index");
         return;
     }
 
-    memcpy(ploy_tmp, ploys[idx], N * sizeof(uint32_t));
-    ntt(ploy_tmp, N, 1);
+    memcpy(poly_tmp, polys[idx], N * sizeof(uint32_t));
+    ntt(poly_tmp, N, 1);
     printf("Polynomial at index %u coefficients (mod %u):\n", idx, MOD);
-    uint32_t deg = ploy_degrees[idx].degree > N ? N : ploy_degrees[idx].degree;
+    uint32_t deg = poly_degrees[idx].degree > N ? N : poly_degrees[idx].degree;
     for (size_t i = 0; i < deg; i++) {
-        printf("%u ", ploy_tmp[i]);
+        printf("%u ", poly_tmp[i]);
     }
     puts("");
 }

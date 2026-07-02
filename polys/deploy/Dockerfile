@@ -8,10 +8,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -r -u 10001 -g nogroup -d /nonexistent -s /usr/sbin/nologin ctf
 
-COPY attachment/ploys /app/ploys
+COPY attachment/polys /app/polys
 COPY deploy/start.sh /app/start.sh
 
-RUN chmod 0555 /app/ploys /app/start.sh
+RUN chmod 0555 /app/polys /app/start.sh
 
 EXPOSE 1337
 
