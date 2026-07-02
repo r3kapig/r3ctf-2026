@@ -31,6 +31,13 @@ VICTIM_PHONE="${VICTIM_PHONE:-+15550000}"
 VICTIM_DISPLAY="${VICTIM_DISPLAY:-Whisper Victim}"
 VICTIM_PASSWORD="${WHISPER_VICTIM_PASSWORD:-v1ct1m-wh1sper-2026}"
 
+# Lower LCD resolution to cut swiftshader software-rendering cost on the host.
+# The challenge is a native heap exploit in whisperd (triggered over the network),
+# so the on-screen UI resolution is irrelevant to solvability.
+AVD_LCD_WIDTH="${AVD_LCD_WIDTH:-480}"
+AVD_LCD_HEIGHT="${AVD_LCD_HEIGHT:-800}"
+AVD_LCD_DENSITY="${AVD_LCD_DENSITY:-160}"
+
 WORK_DIR="/tmp/avd_work/${AVD_NAME}"
 AVD_HOME="/root/.android"
 
@@ -217,6 +224,19 @@ done || true
     --force
 
 log "  AVD '${AVD_NAME}' created."
+
+# Drop the pixel_4 display (1080x2280) to a small panel so swiftshader has far
+# fewer pixels to rasterize per frame (biggest host-CPU drain at idle).
+AVD_CFG="${AVD_HOME}/avd/${AVD_NAME}.avd/config.ini"
+if [[ -f "${AVD_CFG}" ]]; then
+    sed -i '/^hw\.lcd\./d' "${AVD_CFG}"
+    {
+        echo "hw.lcd.width = ${AVD_LCD_WIDTH}"
+        echo "hw.lcd.height = ${AVD_LCD_HEIGHT}"
+        echo "hw.lcd.density = ${AVD_LCD_DENSITY}"
+    } >> "${AVD_CFG}"
+    log "  LCD set to ${AVD_LCD_WIDTH}x${AVD_LCD_HEIGHT}@${AVD_LCD_DENSITY}dpi (was pixel_4 1080x2280)."
+fi
 
 AVD_DIR="${AVD_HOME}/avd/${AVD_NAME}.avd"
 if [[ -d "${AVD_DIR}" ]]; then

@@ -61,6 +61,11 @@ for i in $(seq 1 "${WHISPER_MAX_INSTANCES}"); do
     privileged: true
     devices:
       - /dev/kvm:/dev/kvm
+    deploy:
+      resources:
+        limits:
+          cpus: \"${WHISPER_VICTIM_CPUS:-4}\"
+          memory: ${WHISPER_VICTIM_MEM:-6g}
     environment:
       WHISPER_REAL_FLAG: \"\${WHISPER_REAL_FLAG}\"
       BACKEND_URL: \"http://backend:8000\"
