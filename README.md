@@ -13,7 +13,7 @@ This is the `infra` branch, holding the dynamic-challenge build / deploy sources
 | Pwn | pwn-eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/pwn-eazyvpn:latest` |
 | Misc | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` |
 | Misc | trustedhash | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/trustedhash:latest` |
-| Misc | pewpew | (static attachment) |
+| Pwn | pewpew | (static attachment) |
 | Misc | Time Capsule | (static attachment) |
 | Pwn | whisper | (local run only) |
 | Crypto | teRRibleRing | (static attachment) |

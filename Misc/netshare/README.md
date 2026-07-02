@@ -1,11 +1,15 @@
 # netshare
 
 - **Category:** Misc
-- **Author:** 
+- **Author:** christa
+- **Difficulty:** Medium
+- **Wave:** 2
 - **Points:** 
 - **Solves:** 
 
 ## Description
+
+K8S proxy race condition.
 
 Kubernetes on-demand 题目：每支队伍获得一个独立的临时 workload 集群，利用
 EndpointSlice 数据陈旧与 Pod IP 复用完成提权。

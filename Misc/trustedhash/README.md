@@ -1,14 +1,17 @@
 # trustedhash
 
 - **Category:** Misc
-- **Author:** 
+- **Author:** starcatmeow
+- **Difficulty:** Hard
+- **Wave:** 3
 - **Points:** 
 - **Solves:** 
 
 ## Description
 
-TPM / secure-boot 证明题。每支队伍获得一个独立的 NixOS 玩家 VM（SSH/VNC 可登录），
-远端 attester 周期性校验 VM 并通过 TPM-attested 通道下发当前 flag。
+TPM-based remote attestation / memory forensics hot boot. 每支队伍获得一个独立的
+NixOS 玩家 VM（SSH/VNC 可登录），远端 attester 周期性校验 VM 并通过 TPM-attested
+通道下发当前 flag。
 
 ## Architecture
 

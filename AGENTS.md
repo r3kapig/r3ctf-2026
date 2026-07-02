@@ -146,7 +146,7 @@ ssh r3kapig@ops.ctf2026.r3kapig.com \
 | Misc | trustedhash | `…/trustedhash:latest` | 1.0 | 2g | portal 镜像（7.57G），运行需 `--privileged` + KVM |
 | Pwn | r3map | `…/r3map:latest` | 2.0 | 3g | kernel pwn，QEMU/KVM，运行需 `--device /dev/kvm` + `seccomp=unconfined` |
 | Pwn | whisper | （不 push） | — | — | **仅本地运行**：`cd deploy && ./run.sh <public-ip> [N]` |
-| Misc | pewpew | （纯附件） | — | — | `attachment/r3ctf-pewpew.rdp` |
+| Pwn | pewpew | （纯附件） | — | — | Windows LFH，`attachment/r3ctf-pewpew.rdp` |
 | Misc | Time Capsule | （纯附件） | — | — | `attachment.7z`（55M） |
 
 `…` = `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700`。完整资源见 `CHALLENGE.md`。

@@ -1,11 +1,17 @@
 # Time Capsule
 
-- **Category:** Misc / Forensics
-- **Author:** 
+- **Category:** Misc
+- **Author:** WhiteDragonQwQ
+- **Difficulty:** Medium
+- **Wave:** 2
 - **Points:** 
 - **Solves:** 
 
 ## Description
+
+A traditional misc challenge: satellite teleprotocol analysis, pyc decompile, wav
+LSB, wav spectrum, zero-width steganography, 3D Hilbert-curve flattening, plus some
+Piet and Brainfuck.
 
 Recover the final flag from the data fragments of drive **UMA-R3**: voice logs,
 satellite captures, encrypted archives, and a 3D voxel renderer. From frequency

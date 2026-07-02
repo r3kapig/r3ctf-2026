@@ -1,11 +1,15 @@
 # teRRibleRing
 
 - **Category:** Crypto
-- **Author:** 
+- **Author:** 糖醋小鸡块
+- **Difficulty:** Medium
+- **Wave:** 3
 - **Points:** 
 - **Solves:** 
 
 ## Description
+
+Notice that there are 3 "R"s in the title :)
 
 A Ring-LWE style challenge in a polynomial ring over `Zmod(p)`. Distinguish the
 noisy samples from the random ones to recover the flag bits.

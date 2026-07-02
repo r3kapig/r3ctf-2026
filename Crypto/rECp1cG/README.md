@@ -1,14 +1,17 @@
 # rECp1cG
 
 - **Category:** Crypto
-- **Author:** 
+- **Author:** deebato
+- **Difficulty:** Medium/Hard
+- **Wave:** 2
 - **Points:** 
 - **Solves:** 
 
 ## Description
 
-A Coppersmith-style crypto challenge. Connect to the TCP service, solve the
-challenge, and recover the flag.
+Quiet steps, old notes: <https://eprint.iacr.org/2007/099.pdf>
+
+ECLCG / ECHNP.
 
 ## Deployment
 

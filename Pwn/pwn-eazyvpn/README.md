@@ -1,14 +1,19 @@
 # pwn-eazyvpn
 
 - **Category:** Pwn
-- **Author:** 
+- **Author:** Squeasp
+- **Difficulty:** Easy
+- **Wave:** 2
 - **Points:** 
 - **Solves:** 
 
 ## Description
 
-eazyVPN — a TLS VPN gateway. Pwn the `fw_ctf_host` binary, then pivot through the
-VPN into the internal `172.20.0.0/24` network to reach the flag service.
+simple sslvpn... but something more.
+
+SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the `fw_ctf_host` binary,
+then pivot through the VPN into the internal `172.20.0.0/24` network to reach the
+flag service.
 
 ## Deployment
 

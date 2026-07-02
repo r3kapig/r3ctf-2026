@@ -1,14 +1,23 @@
 # pewpew
 
-- **Category:** Misc
-- **Author:** 
+- **Category:** Pwn
+- **Author:** sub1s
+- **Difficulty:** Easy
+- **Wave:** 1
 - **Points:** 
 - **Solves:** 
 
 ## Description
 
-Connect to the remote Windows host and find the flag. A Remote Desktop connection
-file is provided in `attachment/`.
+The spaceship is making noises again.
+
+Management says this is normal. Engineering says not to press the red buttons. The
+flight computer says everything is perfectly calibrated.
+
+Have fun.
+
+Windows LFH playground. Connect to the remote Windows host (Windows Server 2025) and
+find the flag. A Remote Desktop connection file is provided in `attachment/`.
 
 ## Connection
 

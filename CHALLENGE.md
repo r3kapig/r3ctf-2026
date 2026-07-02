@@ -19,7 +19,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | 类型 | 名字 | 说明 |
 |---|---|---|
 | Pwn | whisper | 本地跑通即可，不构建/push。部署：`cd deploy && ./run.sh <public-ip> [N]`，`[N]` 为并发设备上限（超过则排队），已实现动态 flag。运行需 KVM + Android AVD，约 2 CPU / 4G。 |
-| Misc | pewpew | 纯附件：`attachment/r3ctf-pewpew.rdp`（连外部 Windows 主机）。 |
+| Pwn | pewpew | 纯附件：`attachment/r3ctf-pewpew.rdp`（连外部 Windows 主机，Windows Server 2025）。 |
 | Misc | Time Capsule | 纯附件：`attachment/` 下的取证/隐写链文件。 |
 | Crypto | teRRibleRing | 纯附件：`attachment/{task.sage, samples.txt}`（Ring-LWE，SageMath，离线分析）。 |
 

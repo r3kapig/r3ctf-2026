@@ -1,11 +1,15 @@
 # whisper
 
 - **Category:** Pwn
-- **Author:** 
+- **Author:** lbytes
+- **Difficulty:** Medium/Hard
+- **Wave:** 3
 - **Points:** 
 - **Solves:** 
 
 ## Description
+
+Slide into their DMs — they won't even open the message.
 
 A 0-click Android exploit chain delivered through a messaging app. Craft a malicious
 `.rcard` attachment, send it to a victim over the `whisper` messenger, and trigger a
