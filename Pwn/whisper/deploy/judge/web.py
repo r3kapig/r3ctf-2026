@@ -198,7 +198,7 @@ async def admin_set_flag(request: Request):
     body = await request.json()
     team_id = int(body["team_id"])
     flag = str(body["flag"])
-    team_flags.set(team_id, flag)
+    team_flags.set_team_flag(team_id, flag)
     logger.info("admin_set_flag: team_id=%s (flag redacted)", team_id)
     return JSONResponse({"ok": True, "team_id": team_id})
 
