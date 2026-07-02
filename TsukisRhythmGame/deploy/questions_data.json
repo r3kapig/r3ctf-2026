@@ -1,0 +1,30 @@
+{
+  "questions": [
+    "What is the MD5 hash of the main executable of the rhythm game downloaded by the victim? (E: 38fc27eae9f85049ee8a002a38c794b7)",
+    "What are the Key and IV used by the rhythm game to encrypt and decrypt the beatmaps? (Format: Key_IV) (E: Thisiskey@123456_Thisisiv@1234567)",
+    "What is the MD5 hash of the malicious payload bytecode ultimately decrypted by the rhythm game? (E: ff418d8b23b59a2a88f013c68f3c4873)",
+    "The attacker used the rhythm game to implant a C2 client on the victim's computer. What is the listening port of the C2 server it connects back to? (E: 9999)",
+    "During its execution, the C2 client read a local file on the victim's machine for subsequent communication encryption. What is the absolute path of this file? (E: C:\\Users\\Public\\a.txt)",
+    "Following up on the previous question, what was the original MD5 hash of this file when it was read? (E: dcc596761e0273d4531c1e0af3f02462)",
+    "After establishing the C2 connection, what was the first command issued and executed by the attacker via the C2 server? (E: dir)",
+    "What was the return result of the whoami command executed by the attacker? (E: aurasec\\pig)",
+    "The attacker created a new user on the victim's computer. What are the username and password of this user? (Format: Name_Password) (E: Aura_123456)",
+    "By analyzing the retrieved files, what is the 7th word of the MetaMask wallet seed phrase saved by the victim? (E: watermelon)",
+    "What is the victim's Ethereum wallet address? (E: 0x55897c6Af89Ef014EeC7BF031c26f55C23bF4367)"
+  ],
+  "hashed_answers": [
+    "0bff11dd6d797600adbaa2c4f28bf1c35bb7359856052f839bb9d458340a5252",
+    "b4ce6fd1ec541a5b0893b1afc7f30113d9ad5c07eb54a95f375c8b47149b9bbb",
+    "8d1e3a17050782a466ff1771cd487a9e28133925d182513c396b8001f85b225a",
+    "79f06f8fde333461739f220090a23cb2a79f6d714bee100d0e4b4af249294619",
+    "4ded39eeb1f0d717538e913df1b711ba9bec67473dca9c5173b3fbab704d0c76",
+    "36b28a2c98576e8db8aba9e48ba36dac6f405e9636cab8aaac578a7f90d60752",
+    "59cb534e02a16fd3d21d1ba5d34ee15e665d7a955751171249563d1192aa33e4",
+    "7f8df0587ea25b500e2441ffdc9d72e22ef0123e8a6208fe9c6948186b8c6ab7",
+    "e47b4d9c941c18cdfccaf9989b092c862d956adc3cdb288a6e57fcb684af58e5",
+    "4acfccfbec10ea281d05f277395d47f77e1f7bf653b0bbfde40893ec2db60068",
+    "998d7e67d24c8f89d096880d039408235834289424d3771c17bfb37da481571d"
+  ],
+  "special_message_after": 9,
+  "special_message": "Following the above investigation, the relevant personnel have successfully identified the attacker and retrieved some files from the attacker's computer, specifically the archive Evidence.zip. Extraction password: 18ae3a54-1c1a-4f44-adca-9884acb80d9a"
+}

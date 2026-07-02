@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tsuki's Rhythm Game</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div class="bg-blobs">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+
+<div class="container">
+  <div class="glass-card" id="card">
+    <div class="header">
+      <h1>Tsuki's Rhythm Game</h1>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <p class="progress-text" id="progressText">Question 1 / 11</p>
+    </div>
+
+    <div id="questionArea">
+      <p class="question-label" id="qNumLabel">Q1</p>
+      <p class="question-text" id="questionText">Loading...</p>
+
+      <div class="input-row">
+        <input type="text" id="answerInput" placeholder="Enter your answer here..." autocomplete="off">
+        <button id="submitBtn">Submit</button>
+      </div>
+
+      <p class="feedback" id="feedback"></p>
+    </div>
+
+    <div id="finishedArea" class="hidden">
+      <p class="finish-title">🎉 All questions completed 🎉</p>
+      <div class="flag-box" id="flagBox"></div>
+    </div>
+
+    <div id="specialOverlay" class="special-overlay hidden">
+      <div class="special-box">
+        <p id="specialText"></p>
+        <button id="specialClose">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

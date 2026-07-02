@@ -13,6 +13,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` | 0.5 | 256m | pushed ✓ |
 | trustedhash | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/trustedhash:latest` | 1.0 | 2g | pushed ✓ |
 | r3map | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/r3map:latest` | 2.0 | 3g | pushed ✓ |
+| TsukisRhythmGame | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/tsukisrhythmgame:latest` | 0.1 | 128m | pushed ✓ |
 
 ## 本地运行 / 纯附件（不 push 镜像）
 
