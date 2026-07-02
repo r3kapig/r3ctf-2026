@@ -14,7 +14,7 @@ import time
 import urllib.request
 import urllib.error
 
-_FLAG_RE = re.compile(r'^R3CTF\{[0-9a-f\-]+\}$')
+_FLAG_RE = re.compile(r'^R3CTF\{[^}]+\}$')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -155,7 +155,7 @@ def _write_flag(serial, flag_value):
     if not _FLAG_RE.match(flag_value):
         log.error(
             "Refusing to write flag: value does not match expected format "
-            "(R3CTF{[0-9a-f-]+}), got: %r", flag_value
+            "(R3CTF{...}), got: %r", flag_value
         )
         return False
 
@@ -377,7 +377,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     new_flag = raw_flag
                 else:
                     self._send_json(400, {
-                        "error": "invalid flag format: must match R3CTF{[0-9a-f-]+}"
+                        "error": "invalid flag format: must match R3CTF{...}"
                     })
                     return
 
