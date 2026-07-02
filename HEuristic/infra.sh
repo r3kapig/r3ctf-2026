@@ -2,8 +2,8 @@
 # Build + run the challenge. Run FROM INSIDE deploy/:  cd deploy && ../infra.sh
 set -e
 NAME="heuristic"
-REG="r3ctf.ops.ret.sh.cn/r3ctf_2026"
-TAG="v0"
+REG="registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700"
+TAG="latest"
 HOST_PORT="30002"
 CONTAINER_PORT="9999"
 IMAGE="$REG/$NAME:$TAG"
