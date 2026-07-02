@@ -149,7 +149,7 @@ def _do_assign(team_id: int, instance: dict):
     now = time.time()
     ts = _team_state(team_id)
 
-    flag = team_flags.get(team_id)
+    flag = team_flags.get_team_flag(team_id)
     if flag is None:
         logger.error(
             "No flag pushed for team_id=%s; auth pod must POST /admin/flags before lease",
