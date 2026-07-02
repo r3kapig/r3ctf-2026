@@ -1,0 +1,17 @@
+version: '3'
+services:
+  chall:
+    build: ../                  # build the Dockerfile in the parent (deploy/) dir
+    environment:
+      FLAG: "r3ctf{local_test_flag}"
+    ports:
+      - "9999:9999"             # host:container — keep in sync with EXPOSE / service port
+    restart: unless-stopped
+    # Optional hardening / limits (mirror production):
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "0.1"
+    #       memory: 128m
+    # For nsjail (pwn.red/jail) you also need:
+    # privileged: true

@@ -3,8 +3,12 @@
 **/.DS_Store
 **/._*
 
-# Reference / scratch material (not part of the r3ctf-2026 repo)
-/reference/
+# Reference / scratch material (not part of the r3ctf-2026 repo), EXCEPT the
+# creating-ctf-docker skill and the ret2shell-ext-controller-pod template,
+# which are tracked in the repo.
+/reference/*
+!/reference/creating-ctf-docker/
+!/reference/ret2shell-ext-controller-pod/
 
 # Large / packed challenge artifacts.
 # - whisper player stack (~481MB) is distributed via cloud storage (see
