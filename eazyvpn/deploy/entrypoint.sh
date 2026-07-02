@@ -25,7 +25,7 @@ printf '%s\n' "$INSERT_FLAG" | tee /flag /app/flag >/dev/null
 chmod 444 /flag /app/flag  2>/dev/null || true
 
 # --- VPN credentials: NO baked-in default. Random
-: "${SSLVPN_USER:=ops}"
+: "${SSLVPN_USER:=Mr.Slopper}"
 if [ -z "${SSLVPN_PASS:-}" ]; then
     SSLVPN_PASS="$(dd if=/dev/urandom bs=32 count=1 2>/dev/null | base64 | tr -dc 'A-Za-z0-9' | head -c 16)"
     echo "[entrypoint] generated random SSLVPN_PASS for this container start"
