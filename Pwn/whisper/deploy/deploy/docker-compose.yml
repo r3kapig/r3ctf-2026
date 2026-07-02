@@ -59,18 +59,15 @@ services:
       LEASE_COOLDOWN_SECONDS: "${LEASE_COOLDOWN_SECONDS:-60}"
       INSTANCE_BOOT_DEADLINE_SECS: "${INSTANCE_BOOT_DEADLINE_SECS:-1200}"
       INSTANCE_BOOT_TYPICAL_SECS: "${INSTANCE_BOOT_TYPICAL_SECS:-600}"
-      WHISPER_TEAMS_FILE: "/config/teams.json"
       WHISPER_TEMPLATE_APK: "/app/dist/whisper.apk"
       JUDGE_DEBUG_KEYSTORE: "/opt/android-tools/debug.keystore"
       JUDGE_KEYSTORE_PASS: "android"
-      JUDGE_SESSION_SECRET: "${JUDGE_SESSION_SECRET:-changeme-session-secret}"
       WHISPER_CF_RUNNER_URL: "${WHISPER_CF_RUNNER_URL:-}"
       WHISPER_RESET_SCRIPT: "${WHISPER_RESET_SCRIPT:-}"
       JUDGE_HOST: "0.0.0.0"
       JUDGE_PORT: "8080"
       TEAM_FLAGS_FILE: "/data/team_flags.json"
     volumes:
-      - ./config/teams.json:/config/teams.json:ro
       - ../dist:/app/dist:ro
       - ./judge-data:/data
     expose:

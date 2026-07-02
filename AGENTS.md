@@ -234,22 +234,23 @@ git push origin infra        # infra 分支已 set-upstream
 把 judge 藏起来、给每队一个 pod 作为唯一入口：
 
 ```
-player ──X-Pod-Token──► auth pod ──X-Team-Token──► judge (internal)
-player ───────────────────────────────────────────► backend (public, in APK)
+player ──X-Pod-Token──► auth pod ──X-Admin-Token + team_id──► judge (internal)
+player ──────────────────────────────────────────────────────► backend (public, in APK)
 ```
 
 - **judge 改动**（已做）：
   - `team_flags.py`：per-team flag **以 `/data/team_flags.json` 文件为准**（每次读写都
-    落文件，原子 `os.replace`，没有内存缓存）。auth pod 启动 + 每次 `/lease` 前都会推
-    flag（推不成功就重试），保证 judge 一定有。
+    落文件，原子 `os.replace`，没有内存缓存）。
   - `POST /admin/flags`（admin 鉴权）：auth pod 把 flag 推到这里。
+  - `/lease` `/release` `/status`：admin 鉴权 + body/query 取 `team_id`（已删 team token +
+    `teams.json`，pool 直接按 `team_id` 索引）。
   - `pool._do_assign`：**必须有** pushed flag（`team_flags.get(team_id)`），否则拒绝租约
     （已删除 `flag_stego.make_flag`，judge 不再产 flag）。
   - `worker._flag_accepted`：直接和 pushed flag 比对（flag-sharing / stegano 校验交给平台 checker）。
 - **auth pod**（`Pwn/whisper/auth-pod/`）：
-  - 环境：`TEAM_ID` / `TEAM_TOKEN`（teams.json）/ `POD_TOKEN`（随机）/
-    `WHISPER_JUDGE_URL`（内网）/ `WHISPER_BACKEND_URL`（公网）/
-    `WHISPER_ADMIN_TOKEN` / 可选 `FLAG`。
+  - 环境：`TEAM_ID` / `POD_TOKEN`（随机）/ `WHISPER_JUDGE_URL`（内网）/
+    `WHISPER_BACKEND_URL`（公网）/ `WHISPER_ADMIN_TOKEN` / 可选 `FLAG`（不设则用
+    `R3CTF{TEST_FLGA}` 占位）。
   - 启动推 flag，运行时代理 `lease / release / status / download/whisper.apk`。
 - **部署**：judge + backend + victim pool 用 `deploy/deploy/run.sh` 起（judge 不暴露）；
   平台（ret.sh / k8s-on-demand）每队起一个 auth-pod，给选手 pod URL + `POD_TOKEN`。

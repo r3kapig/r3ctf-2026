@@ -133,10 +133,9 @@ if $DC -f docker-compose.yml -f "${GEN_FILE}" logs "${FIRST_VICTIM}" 2>/dev/null
     echo "      judge:   http://${PUBLIC_IP}:${WHISPER_WEB_PORT}"
     echo "      backend: http://${PUBLIC_IP}:${WHISPER_BACKEND_PORT}"
     echo "      pool:    ${WHISPER_MAX_INSTANCES} victim runner(s)"
-    echo "      tokens:  config/teams.json"
     echo
-    echo "[run] Model B: spawn one auth-pod per team (see auth-pod/README.md); each pod"
-    echo "      pushes its team's flag to the judge at ${WHISPER_WEB_PORT}."
+    echo "[run] Spawn one auth-pod per team (see auth-pod/README.md); each pod pushes"
+    echo "      its team's flag to the judge at ${WHISPER_WEB_PORT}."
 else
     echo "[run] ${FIRST_VICTIM} did not report READY in time; check:"
     echo "      $DC -f docker-compose.yml -f ${GEN_FILE} logs ${FIRST_VICTIM}"

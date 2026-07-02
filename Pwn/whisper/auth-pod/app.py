@@ -6,19 +6,18 @@ never exposed to players.
 
 Required env:
   TEAM_ID             numeric team id
-  TEAM_TOKEN          team token for the judge (X-Team-Token); from teams.json
   POD_TOKEN           per-team token players use to reach this pod
-  WHISPER_JUDGE_URL   internal judge base URL, e.g. http://whisper-judge:8080
+  WHISPER_JUDGE_URL   internal judge base URL, e.g. http://judge:8080
   WHISPER_BACKEND_URL public messenger backend URL baked into the APK
+  WHISPER_ADMIN_TOKEN judge admin token (pod authenticates to judge with this)
 
 Optional env:
-  WHISPER_ADMIN_TOKEN admin token; required to push a platform flag at boot
-  FLAG                platform-generated flag to push to the judge (Model A)
+  FLAG                platform flag to push to the judge (defaults to a test
+                      placeholder if unset)
 """
 import os
 import sys
 import time
-import uuid
 import logging
 
 import requests
@@ -37,12 +36,11 @@ def _need(name: str) -> str:
 
 
 TEAM_ID       = int(_need("TEAM_ID"))
-TEAM_TOKEN    = _need("TEAM_TOKEN")
 POD_TOKEN     = _need("POD_TOKEN")
 JUDGE_URL     = _need("WHISPER_JUDGE_URL").rstrip("/")
 BACKEND_URL   = _need("WHISPER_BACKEND_URL").rstrip("/")
-ADMIN_TOKEN   = os.environ.get("WHISPER_ADMIN_TOKEN", "").strip()
-FLAG          = os.environ.get("FLAG", "").strip() or f"R3CTF{{{uuid.uuid4().hex}}}"
+ADMIN_TOKEN   = _need("WHISPER_ADMIN_TOKEN")
+FLAG          = os.environ.get("FLAG", "R3CTF{TEST_FLGA}").strip()
 
 app = Flask(__name__)
 
@@ -55,8 +53,8 @@ def _authorized() -> bool:
     return False
 
 
-def _team_headers() -> dict:
-    return {"X-Team-Token": TEAM_TOKEN}
+def _admin_headers() -> dict:
+    return {"X-Admin-Token": ADMIN_TOKEN}
 
 
 def push_flag() -> bool:
@@ -93,9 +91,10 @@ def _proxy(method: str, path: str):
     try:
         resp = requests.request(
             method, url,
-            headers=_team_headers(),
+            headers=_admin_headers(),
             timeout=25,
-            json=request.get_json(silent=True),
+            params={"team_id": TEAM_ID} if method == "GET" else None,
+            json={"team_id": TEAM_ID} if method != "GET" else None,
         )
         try:
             return jsonify(resp.json()), resp.status_code

@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import threading
@@ -23,7 +22,6 @@ JUDGE_PORT        = int(os.environ.get("JUDGE_PORT", "8080"))
 BACKEND_URL       = os.environ.get("WHISPER_BACKEND_URL", "http://localhost:8000")
 VICTIM_HANDLE     = os.environ.get("WHISPER_VICTIM_HANDLE", "victim")
 MAX_RCARD_BYTES   = int(os.environ.get("WHISPER_MAX_RCARD_BYTES", str(4 * 1024 * 1024)))
-TEAMS_FILE        = os.environ.get("WHISPER_TEAMS_FILE", "/config/teams.json")
 
 _HERE         = Path(__file__).parent.resolve()
 _REPO_ROOT    = _HERE.parent
@@ -32,77 +30,6 @@ BAKED_APK_DIR = os.environ.get("JUDGE_BAKED_APK_DIR", "/tmp/whisper_baked")
 DEBUG_KEYSTORE = os.environ.get("JUDGE_DEBUG_KEYSTORE", "/opt/android-tools/debug.keystore")
 
 PUBLIC_BACKEND_URL = judge_pool.PUBLIC_BACKEND_URL
-
-def _load_teams() -> dict:
-
-    try:
-        with open(TEAMS_FILE) as fh:
-            data = json.load(fh)
-        teams = {}
-        for idx, entry in enumerate(data.get("teams", []), start=1):
-            tok = entry.get("token", "").strip()
-            name = entry.get("name", "Unknown Team")
-            team_id = int(entry.get("id", idx))
-            if tok:
-                teams[tok] = {"name": name, "id": team_id}
-        logger.info("Loaded %d teams from %s", len(teams), TEAMS_FILE)
-        return teams
-    except FileNotFoundError:
-        logger.warning("Teams file not found: %s -- team auth disabled", TEAMS_FILE)
-        return {}
-    except Exception as exc:
-        logger.error("Failed to load teams file: %s", exc)
-        return {}
-
-_teams_registry: dict = {}
-_teams_lock = threading.Lock()
-
-def _get_teams() -> dict:
-    with _teams_lock:
-        return dict(_teams_registry)
-
-def _reload_teams():
-    global _teams_registry
-    with _teams_lock:
-        _teams_registry = _load_teams()
-
-def _team_name(token: str) -> str | None:
-
-    entry = _get_teams().get(token)
-    if entry is None:
-        return None
-    return entry["name"]
-
-def _team_id(token: str) -> int | None:
-
-    entry = _get_teams().get(token)
-    if entry is None:
-        return None
-    return entry["id"]
-
-def _team_token_from_request(request: Request) -> str | None:
-
-    xt = request.headers.get("X-Team-Token", "").strip()
-    if xt and _team_name(xt) is not None:
-        return xt
-
-    auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        candidate = auth[len("Bearer "):]
-        if candidate != ADMIN_TOKEN and _team_name(candidate) is not None:
-            return candidate
-
-    return None
-
-def _require_team(request: Request) -> str:
-
-    token = _team_token_from_request(request)
-    if token is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Team token required. Log in at / or send X-Team-Token header.",
-        )
-    return token
 
 def _require_admin(request: Request):
     auth_header = request.headers.get("Authorization", "")
@@ -161,7 +88,6 @@ def _bake_apk_cached():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _reload_teams()
     judge_worker.start_worker()
     judge_pool.start_reaper()
     judge_pool._init_pool()
@@ -201,11 +127,11 @@ def download_apk():
 
 @app.post("/lease")
 async def lease(request: Request):
-
-    token = _require_team(request)
-    tid = _team_id(token)
+    _require_admin(request)
+    body = await request.json()
+    team_id = int(body["team_id"])
     try:
-        result = judge_pool.pool_lease(token, team_id=tid)
+        result = judge_pool.pool_lease(team_id)
     except _RateLimitError as exc:
         raise HTTPException(
             status_code=429,
@@ -219,16 +145,17 @@ async def lease(request: Request):
 
 @app.post("/release")
 async def release(request: Request):
-
-    token = _require_team(request)
-    result = judge_pool.pool_release(token)
+    _require_admin(request)
+    body = await request.json()
+    team_id = int(body["team_id"])
+    result = judge_pool.pool_release(team_id)
     return JSONResponse(result)
 
 @app.get("/status")
 async def status(request: Request):
-
-    token = _require_team(request)
-    result = judge_pool.pool_status(token)
+    _require_admin(request)
+    team_id = int(request.query_params.get("team_id", "0"))
+    result = judge_pool.pool_status(team_id)
     return JSONResponse(result)
 
 @app.post("/attempt/provision")

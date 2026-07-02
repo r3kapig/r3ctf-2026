@@ -40,13 +40,15 @@ For platform-managed per-team flags + a single player-facing entry per team:
 
 1. Run the judge + backend + victim pool: `cd deploy/deploy && ./run.sh <public-ip> [N]`.
    The judge is **internal** (not exposed to players).
-2. The platform spawns one `auth-pod` per team with env `TEAM_ID` / `TEAM_TOKEN`
-   (from `teams.json`) / `POD_TOKEN` (random) / `WHISPER_JUDGE_URL` (internal) /
-   `WHISPER_BACKEND_URL` (public) / `WHISPER_ADMIN_TOKEN` / optional `FLAG`.
+2. The platform spawns one `auth-pod` per team with env `TEAM_ID` / `POD_TOKEN`
+   (random) / `WHISPER_JUDGE_URL` (internal) / `WHISPER_BACKEND_URL` (public) /
+   `WHISPER_ADMIN_TOKEN` / optional `FLAG`.
 3. On boot the pod pushes the platform flag to the judge (`POST /admin/flags`); the
-   judge uses it for that team's victim (`pool._do_assign` prefers the pushed flag).
+   judge requires it for that team's victim (`pool._do_assign` refuses a lease with
+   no pushed flag).
 4. Players reach only their pod (URL + `POD_TOKEN`); the pod proxies lease/status/APK
-   to the judge. The backend stays public (the APK connects to it directly).
+   to the judge (admin token + `team_id`). The backend stays public (the APK connects
+   to it directly).
 
 See `auth-pod/README.md` for the pod contract.
 
