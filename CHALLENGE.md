@@ -22,6 +22,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | pewpew | 纯附件：`attachment/r3ctf-pewpew.rdp`（连外部 Windows 主机，Windows Server 2025）。 |
 | Time Capsule | 纯附件：`attachment/` 下的取证/隐写链文件。 |
 | teRRibleRing | 纯附件：`attachment/{task.sage, samples.txt}`（Ring-LWE，SageMath，离线分析）。 |
+| lift | 纯附件：`attachment/chall`（静态 ELF，IR / lambda VM 逆向，离线分析）。 |
 
 ## 备注
 
