@@ -21,6 +21,13 @@ INSTANCE_BOOT_TYPICAL_SECS  = int(os.environ.get("WHISPER_INSTANCE_BOOT_TYPICAL_
 
 WHISPER_POOL = os.environ.get("WHISPER_POOL", "")
 
+_PUBLIC_IP = os.environ.get("PUBLIC_IP", "")
+_PUBLIC_BACKEND_PORT = os.environ.get("PUBLIC_BACKEND_PORT", "8000")
+PUBLIC_BACKEND_URL = (
+    os.environ.get("PUBLIC_BACKEND_URL")
+    or (f"http://{_PUBLIC_IP}:{_PUBLIC_BACKEND_PORT}" if _PUBLIC_IP else "http://localhost:8000")
+)
+
 _lock = threading.RLock()
 _instances: dict[str, dict] = {}
 _teams: dict[int, dict] = {}
