@@ -6,8 +6,9 @@ This is the `infra` branch, holding the challenge build / deploy sources.
 
 - See [`CHALLENGE.md`](./CHALLENGE.md) for the full challenge list with CPU / memory
   limits, image names, ports, and deploy notes.
-- See [`AGENTS.md`](./AGENTS.md) for the ops runbook (remote build → push →
-  deploy → CHALLENGE.md → git).
+- See [`DEPLOY.md`](./DEPLOY.md) for the ops runbook (remote build → push →
+  deploy → troubleshooting).
+- See [`AGENTS.md`](./AGENTS.md) for concise agent guidance + conventions.
 
 ## Layout
 
