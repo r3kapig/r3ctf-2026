@@ -2,44 +2,53 @@
 
 Source code and deployment material for the R3CTF 2026 challenges.
 
-This is the `infra` branch, holding the dynamic-challenge build / deploy sources.
+This is the `infra` branch, holding the challenge build / deploy sources.
 
-## Challenges
-
-| Category | Challenge | Image |
-|---|---|---|
-| Crypto | HEuristic | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/heuristic:latest` |
-| Crypto | rECp1cG | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/recp1cg:latest` |
-| Pwn | eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/eazyvpn:latest` |
-| Misc | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` |
-| Misc | trustedhash | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/trustedhash:latest` |
-| Pwn | pewpew | (static attachment) |
-| Misc | Time Capsule | (static attachment) |
-| Pwn | whisper | (local run only) |
-| Crypto | teRRibleRing | (static attachment) |
-| Pwn | r3map | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/r3map:latest` |
-| Pwn | P1gROXY | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/p1groxy:latest` |
-
-See [`CHALLENGE.md`](./CHALLENGE.md) for the full list with CPU / memory limits and
-deploy notes.
+- See [`CHALLENGE.md`](./CHALLENGE.md) for the full challenge list with CPU / memory
+  limits, image names, ports, and deploy notes.
+- See [`AGENTS.md`](./AGENTS.md) for the ops runbook (remote build → push →
+  deploy → CHALLENGE.md → git).
 
 ## Layout
 
-Each challenge follows the r3ctf convention:
+Challenges live **flat at the repo root** (no category folders). Each follows the
+r3ctf convention:
 
 ```text
-<Category>/<challenge>/
+<challenge>/
 ├── README.md
 ├── infra.sh
 ├── attachment/   # public handout (large artifacts are hosted externally)
-└── deploy/       # live container / infra
+└── deploy/       # live container / infra / ops scripts
 ```
+
+VM-hosted challenges (e.g. `whisper`, `virtisol`, `winkernel`) keep only their
+ops scripts in `deploy/`; the guest images and per-instance configs live on the
+VM host, not in git.
+
+## Challenges
+
+Images built and pushed to
+`registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`:
+
+`eazyvpn`, `HEuristic`, `rECp1cG`, `P1gROXY`, `netshare`, `trustedhash`,
+`r3map`, `TsukisRhythmGame`, `definitely-not-a-web-chal`, `r3ticket`, `z3kapig`,
+`polys`.
+
+No image (static attachment / local run / VM-host deployment):
+
+`whisper`, `pewpew`, `Time Capsule`, `teRRibleRing`, `lift`, `virtisol`,
+`winkernel`.
+
+Again, see [`CHALLENGE.md`](./CHALLENGE.md) for details.
 
 ## Large artifacts
 
 Files over GitHub's 100MB limit are **not** stored in the repo (see `.gitignore`):
 
-- `whisper/attachment/whisper-local-stack.7z`
-- `Time Capsule/attachment/satellitelog/Satellite_log--2A7E.4.003.pcap`
+- `whisper/attachment/whisper-local-stack.7z` (~481MB) — hosted externally; the
+  placeholder `whisper-local-stack.txt` stays in git.
+- `Time Capsule/attachment/` (uncompressed dir) — only the packed
+  `attachment.7z` (~58MB) is committed.
 
 They are distributed via the contest platform / object storage.
