@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 set -u
 
+# gunicorn lives in the image's Python venv. Re-add it here so this script
+# works regardless of how it is launched (su / setpriv / docker USER all reset
+# or preserve PATH differently).
+export PATH="/opt/p1groxy-venv/bin:${PATH}"
+
 export P1GROXY_LISTEN_HOST="${P1GROXY_LISTEN_HOST:-0.0.0.0}"
 export P1GROXY_LISTEN_PORT="${P1GROXY_LISTEN_PORT:-8080}"
 export P1GROXY_UPSTREAM_HOST="${P1GROXY_UPSTREAM_HOST:-127.0.0.1}"
