@@ -153,7 +153,7 @@ fi
 
 ---
 
-## 5. whisper Model B（per-team auth pod）
+## 5. whisper per-team auth pod
 
 把 judge 藏起来、给每队一个 pod 作为唯一入口：
 

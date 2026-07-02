@@ -24,7 +24,7 @@ heap-to-root exploit in the privileged native `whisperd` daemon inside
 - `deploy/` — production infrastructure: the judge, the per-team victim pool, the
   AOSP image-baking tooling (`aosp/`), the `whisperd` binary, and the compose stack
   (nginx + backend + judge + N victim runners) under `deploy/deploy/`.
-- `auth-pod/` — **Model B** per-team pod: sits between the player and the judge,
+- `auth-pod/` — per-team pod: sits between the player and the judge,
   proxies lease/status/APK to the judge (admin token + team_id), and pushes a
   platform flag to the judge at boot. The judge is not exposed to players.
 
@@ -38,7 +38,7 @@ by the judge. Only placeholders are committed.
   `cd whisper-local-stack && ./run.sh`.
 - Production stack (organizers): `cd deploy/deploy && ./run.sh`.
 
-### Model B (per-team auth pod)
+### Per-team auth pod
 
 For platform-managed per-team flags + a single player-facing entry per team:
 
@@ -60,4 +60,4 @@ See `auth-pod/README.md` for the pod contract.
 
 - `attachment/whisper-local-stack.7z` — player handout (local repro), 7z-compressed.
 - `deploy/` — production infra (organizer-only).
-- `auth-pod/` — Model B per-team auth pod (player-facing proxy to the judge).
+- `auth-pod/` — per-team auth pod (player-facing proxy to the judge).
