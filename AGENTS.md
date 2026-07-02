@@ -71,6 +71,12 @@ fi
 
 > 远端**没有 `rsync`**，传文件用 `tar | ssh tar`（见 §5）。
 
+### 辅助镜像（registry 里已有，非题目）
+
+| 镜像 | 用途 |
+|---|---|
+| `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/sleepy:latest` | 辅助镜像，用来给 pod / 服务**开多个端口**（端口转发 / 多端口监听）。需要时直接拉这个 tag 用即可。源：`docker.io/reverier/sleepy:latest`。 |
+
 ---
 
 ## 4. 标准流程：新增 / 整理一道题
