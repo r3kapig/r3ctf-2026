@@ -18,8 +18,10 @@ to read the flag.
 This challenge is **not** a Docker image and has no player attachment in this
 repo — it runs as 8 QEMU/KVM instances directly on the VM host
 (`vm.ctf2026.r3kapig.com`), managed by the ops scripts here. The guest image
-(`babycom.qcow2`), instance config (`vs.json`), and the COM service artifacts
-live on the host (not in git).
+(`babycom.qcow2`) and instance config (`vs.json`) live on the host (not in
+git). The COM service artifacts (`vaultsvc.exe`, `vaultsvc_ps.dll`,
+`vaultsvc.tlb`) are tracked in `artifacts/` and must be copied to
+`/root/archive/bin/` on the host before launch (see `OPS.md` §0).
 
 - **Ports:** 28300–28307 (one SSH per instance)
 - **Flag:** `r3ctf{8d9c9e48-2b4e-404d-9666-d015c707576c}` (static, same for all)
