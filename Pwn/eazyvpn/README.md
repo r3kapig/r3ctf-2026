@@ -1,4 +1,4 @@
-# pwn-eazyvpn
+# eazyvpn
 
 - **Category:** Pwn
 - **Author:** Squeasp

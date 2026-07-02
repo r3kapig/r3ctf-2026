@@ -10,7 +10,7 @@ This is the `infra` branch, holding the dynamic-challenge build / deploy sources
 |---|---|---|
 | Crypto | HEuristic | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/heuristic:latest` |
 | Crypto | rECp1cG | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/recp1cg:latest` |
-| Pwn | pwn-eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/pwn-eazyvpn:latest` |
+| Pwn | eazyvpn | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/eazyvpn:latest` |
 | Misc | netshare | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest` |
 | Misc | trustedhash | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/trustedhash:latest` |
 | Pwn | pewpew | (static attachment) |
