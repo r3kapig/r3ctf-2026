@@ -229,11 +229,16 @@ log "  AVD '${AVD_NAME}' created."
 # fewer pixels to rasterize per frame (biggest host-CPU drain at idle).
 AVD_CFG="${AVD_HOME}/avd/${AVD_NAME}.avd/config.ini"
 if [[ -f "${AVD_CFG}" ]]; then
-    sed -i \
-        -e "s/^hw\.lcd\.width.*/hw.lcd.width = ${AVD_LCD_WIDTH}/" \
-        -e "s/^hw\.lcd\.height.*/hw.lcd.height = ${AVD_LCD_HEIGHT}/" \
-        -e "s/^hw\.lcd\.density.*/hw.lcd.density = ${AVD_LCD_DENSITY}/" \
-        "${AVD_CFG}"
+    # Strip any existing hw.lcd.* keys, then append ours. A bare sed
+    # substitution is a no-op when the keys are absent (pixel_4 inherits the
+    # panel from the device profile, not config.ini), which would silently
+    # leave the display at 1080x2280 and defeat the whole point.
+    sed -i '/^hw\.lcd\.width/d;/^hw\.lcd\.height/d;/^hw\.lcd\.density/d' "${AVD_CFG}"
+    {
+        echo "hw.lcd.width=${AVD_LCD_WIDTH}"
+        echo "hw.lcd.height=${AVD_LCD_HEIGHT}"
+        echo "hw.lcd.density=${AVD_LCD_DENSITY}"
+    } >> "${AVD_CFG}"
     log "  LCD set to ${AVD_LCD_WIDTH}x${AVD_LCD_HEIGHT}@${AVD_LCD_DENSITY}dpi (was pixel_4 1080x2280)."
 fi
 
@@ -303,6 +308,13 @@ log "  setenforce 0..."
 "${ADB}" -s "${ADB_SERIAL}" shell setenforce 0 || true
 SE_MODE=$("${ADB}" -s "${ADB_SERIAL}" shell getenforce 2>/dev/null | tr -d '\r' || echo "unknown")
 log "  getenforce = ${SE_MODE}"
+
+# Zero UI animation scales so the device stops burning host CPU compositing
+# transitions at idle. Global settings; survive /reset (no reboot). Non-fatal.
+log "  Zeroing UI animation scales..."
+"${ADB}" -s "${ADB_SERIAL}" shell settings put global window_animation_scale 0 || true
+"${ADB}" -s "${ADB_SERIAL}" shell settings put global transition_animation_scale 0 || true
+"${ADB}" -s "${ADB_SERIAL}" shell settings put global animator_duration_scale 0 || true
 
 FLAG_STAT=$("${ADB}" -s "${ADB_SERIAL}" shell "ls -la /flag.txt 2>&1" | tr -d '\r')
 log "  /flag.txt: ${FLAG_STAT}"
