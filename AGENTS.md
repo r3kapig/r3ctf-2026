@@ -15,7 +15,8 @@
 registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<challenge>:latest
 ```
 
-平台按 flag 注入方式在选手连接时动态下发 flag，仓库里**只放占位 flag**，真 flag 不进 git。
+平台按 flag 注入方式在选手连接时动态下发 flag。动态题走运行时 `$FLAG` 注入，
+静态题 flag 直接随附件放在仓库里即可。
 
 ---
 
@@ -28,7 +29,7 @@ registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<challenge>:latest
 <challenge>/
 ├── README.md            # CTFd metadata：Category / Author / Difficulty / Description / Files
 ├── infra.sh             # 构建 + 运行脚本（从 deploy/ 内执行）
-├── attachment/          # 给选手的附件（绝不放真 flag）
+├── attachment/          # 给选手的附件（静态题 flag 可随附件放这里）
 └── deploy/              # 线上容器 / 基础设施
     ├── Dockerfile
     ├── service/docker-entrypoint.sh   # flag 注入 + 启动服务（如有）
@@ -77,8 +78,8 @@ fi
 1. **摸清题目**：判断分类、flag 注入方式、是否需要 KVM / 特殊权限、端口。
 2. **整理目录**：按 §2 约定落到 `<Category>/<challenge>/`，写 `README.md` + `infra.sh`，
    把容器文件归进 `deploy/`，选手附件归进 `attachment/`。
-3. **检查 flag**：`grep -rEn 'flag\{|r3ctf\{|R3CTF\{'` 全目录扫一遍，**真 flag 不能进 git**，
-   只剩占位 / 题目内 decoy。
+3. **检查 flag**：`grep -rEn 'flag\{|r3ctf\{|R3CTF\{'` 全目录扫一遍，确认 flag 放置方式
+   符合预期——动态题走 `$FLAG` 注入（镜像里只放占位），静态题 flag 随附件 / README。
 4. **远端构建 + 推送**：见 §5。
 5. **登记 `CHALLENGE.md`**：类型 / 名字 / 镜像名 / CPU / 内存 / 特殊需求。
 6. **提交 git**：见 §7。
@@ -198,12 +199,12 @@ git push origin infra        # infra 分支已 set-upstream
 - **原因**：SEAL（`-j` 无限制）+ p1groxy + netshare 三个并发构建把 15Gi 打满。
 - **修复**：重型构建串行跑，SEAL 限 `-j4`；机器已升级，但仍别滥用并发。
 
-### 8.3 真 flag 泄漏到 git
+### 8.3 动态题用运行时 `$FLAG` 注入
 
-- 历史问题：HEuristic 的 `docker-compose.yml` 写死了真 flag；P1gROXY 把真 flag 在
-  Dockerfile 里 `printf > /flag.txt` 烘烤进镜像。
-- **修复**：全部改成运行时 `$FLAG` 注入（entrypoint 写 `/flag.txt` 后 scrub），
-  仓库只留占位。新增题目务必 `grep` 自查。
+- 背景：早期 HEuristic 的 `docker-compose.yml` 写死了 flag、P1gROXY 在 Dockerfile
+  里 `printf > /flag.txt` 把 flag 烘烤进镜像，导致每队 flag 一样 / 镜像带 flag。
+- **做法**：动态题一律运行时 `$FLAG` 注入（entrypoint 写 `/flag.txt` 后 scrub），
+  镜像里只放占位；静态题 flag 随附件 / README 放在仓库即可。
 
 ### 8.4 trustedhash 不要重新 build
 
