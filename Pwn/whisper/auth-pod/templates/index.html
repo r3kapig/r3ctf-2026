@@ -177,11 +177,8 @@ function copyField(id, btn) {
   });
 }
 
-var TOKEN = new URLSearchParams(location.search).get('token') || localStorage.getItem('pod_token') || '';
-localStorage.setItem('pod_token', TOKEN);
-
 function api(path, method) {
-  return fetch(path, { method: method || 'GET', headers: { 'X-Pod-Token': TOKEN } });
+  return fetch(path, { method: method || 'GET' });
 }
 function fmt(s) {
   s = Math.max(0, Math.floor(s));
@@ -219,7 +216,7 @@ function renderLeased(d) {
       '<div><div class="field-label">Flag format</div>' +
         '<div class="field-row"><span class="field-val">R3CTF{...}</span></div></div>' +
       '<div><div class="field-label">Download app</div>' +
-        '<a class="btn btn-ghost" href="/download/whisper.apk?token=' + encodeURIComponent(TOKEN) + '" style="align-self:flex-start;">Download whisper.apk</a></div>' +
+        '<a class="btn btn-ghost" href="/download/whisper.apk" style="align-self:flex-start;">Download whisper.apk</a></div>' +
     '</div>' +
     '<hr class="divider">' +
     '<div style="margin-bottom:20px;"><div class="field-label">Lease expires in</div>' +
@@ -267,7 +264,7 @@ function renderIdle() {
     '<button type="button" class="btn btn-primary" id="btn-lease">Request instance</button>' +
     '<div style="height:1px;background:rgba(255,255,255,0.08);margin:24px 0;"></div>' +
     '<div class="field-label">Download app</div>' +
-    '<a class="btn btn-ghost" href="/download/whisper.apk?token=' + encodeURIComponent(TOKEN) + '" style="align-self:flex-start;">Download whisper.apk</a>' +
+    '<a class="btn btn-ghost" href="/download/whisper.apk" style="align-self:flex-start;">Download whisper.apk</a>' +
   '</div>';
 }
 

@@ -1,12 +1,11 @@
 """whisper per-team auth pod.
 
-One pod is spawned per team. Players authenticate to THIS pod with POD_TOKEN;
-the pod talks to the (internal) whisper judge on the team's behalf. The judge is
-never exposed to players.
+One pod is spawned per team. The pod talks to the (internal) whisper judge on the
+team's behalf (admin token + team_id). The judge is never exposed to players;
+players reach only their team's pod URL.
 
 Required env:
   TEAM_ID             numeric team id
-  POD_TOKEN           per-team token players use to reach this pod
   WHISPER_JUDGE_URL   internal judge base URL, e.g. http://judge:8080
   WHISPER_BACKEND_URL public messenger backend URL baked into the APK
   WHISPER_ADMIN_TOKEN judge admin token (pod authenticates to judge with this)
@@ -36,21 +35,12 @@ def _need(name: str) -> str:
 
 
 TEAM_ID       = int(_need("TEAM_ID"))
-POD_TOKEN     = _need("POD_TOKEN")
 JUDGE_URL     = _need("WHISPER_JUDGE_URL").rstrip("/")
 BACKEND_URL   = _need("WHISPER_BACKEND_URL").rstrip("/")
 ADMIN_TOKEN   = _need("WHISPER_ADMIN_TOKEN")
 FLAG          = os.environ.get("FLAG", "R3CTF{TEST_FLGA}").strip()
 
 app = Flask(__name__)
-
-
-def _authorized() -> bool:
-    if request.headers.get("X-Pod-Token") == POD_TOKEN:
-        return True
-    if request.args.get("token") == POD_TOKEN:
-        return True
-    return False
 
 
 def _admin_headers() -> dict:
@@ -85,8 +75,6 @@ def push_flag() -> bool:
 
 
 def _proxy(method: str, path: str):
-    if not _authorized():
-        return jsonify({"error": "forbidden"}), 403
     url = f"{JUDGE_URL}{path}"
     try:
         resp = requests.request(
@@ -109,15 +97,11 @@ def _proxy(method: str, path: str):
 
 @app.route("/")
 def index():
-    if not _authorized():
-        return jsonify({"error": "forbidden"}), 403
     return render_template("index.html", backend_url=BACKEND_URL, team_id=TEAM_ID)
 
 
 @app.route("/lease", methods=["POST"])
 def lease():
-    if not _authorized():
-        return jsonify({"error": "forbidden"}), 403
     # Make sure the judge has this team's flag before it leases a victim
     # (the judge refuses a lease for a team with no pushed flag).
     if not push_flag():
@@ -137,12 +121,10 @@ def status():
 
 @app.route("/download/whisper.apk")
 def download_apk():
-    if not _authorized():
-        return jsonify({"error": "forbidden"}), 403
     try:
         resp = requests.get(
             f"{JUDGE_URL}/download/whisper.apk",
-            headers=_team_headers(), timeout=60, stream=True,
+            headers=_admin_headers(), timeout=60, stream=True,
         )
         resp.raise_for_status()
     except Exception as exc:
