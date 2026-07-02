@@ -39,7 +39,7 @@ Each challenge follows the r3ctf convention:
 
 Files over GitHub's 100MB limit are **not** stored in the repo (see `.gitignore`):
 
-- `Pwn/whisper/attachment/whisper-local-stack.7z`
-- `Misc/Time Capsule/attachment/satellitelog/Satellite_log--2A7E.4.003.pcap`
+- `whisper/attachment/whisper-local-stack.7z`
+- `Time Capsule/attachment/satellitelog/Satellite_log--2A7E.4.003.pcap`
 
 They are distributed via the contest platform / object storage.

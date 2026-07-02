@@ -8,11 +8,11 @@
 
 # Large / packed challenge artifacts.
 # - whisper player stack (~481MB) is distributed via cloud storage (see
-#   Pwn/whisper/attachment/whisper-local-stack.txt); the .7z stays local only.
+#   whisper/attachment/whisper-local-stack.txt); the .7z stays local only.
 # - Time Capsule attachment/ is committed packed as attachment.7z; the
 #   uncompressed dir is kept local only.
-/Pwn/whisper/attachment/whisper-local-stack.7z
-/Misc/Time Capsule/attachment/
+/whisper/attachment/whisper-local-stack.7z
+/Time Capsule/attachment/
 
 # python
 __pycache__/
