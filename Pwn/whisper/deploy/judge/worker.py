@@ -14,7 +14,7 @@ from whisper_deliver import register_account, poll_messages
 
 logger = logging.getLogger("judge_worker")
 
-FLAG_RE = re.compile(r"R3CTF\{[^}]+\}")
+FLAG_RE = re.compile(r"r3ctf\{[^}]+\}", re.IGNORECASE)
 
 BACKEND_URL      = os.environ.get("WHISPER_BACKEND_URL", "http://localhost:8000")
 ADMIN_TOKEN      = os.environ.get("WHISPER_ADMIN_TOKEN", "ctf-admin-token")

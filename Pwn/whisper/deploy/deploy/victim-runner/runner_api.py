@@ -14,7 +14,7 @@ import time
 import urllib.request
 import urllib.error
 
-_FLAG_RE = re.compile(r'^R3CTF\{[^}]+\}$')
+_FLAG_RE = re.compile(r'^r3ctf\{[^}]+\}$', re.IGNORECASE)
 
 logging.basicConfig(
     level=logging.INFO,

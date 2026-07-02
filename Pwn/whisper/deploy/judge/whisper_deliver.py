@@ -8,7 +8,7 @@ ATTACKER_PASSWORD = os.environ.get("WHISPER_ATTACKER_PASSWORD", "judge-att-wh1sp
 
 logger = logging.getLogger("whisper_deliver")
 
-FLAG_RE = re.compile(r"R3CTF\{[^}]+\}")
+FLAG_RE = re.compile(r"r3ctf\{[^}]+\}", re.IGNORECASE)
 
 def _headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
