@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     environment:
       WHISPER_CTF_MODE: "1"
-      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token}"
+      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token-7a4p1vq0}"
       WHISPER_DATA_DIR: /app/data
       WHISPER_HOST: "0.0.0.0"
       WHISPER_PORT: "8000"
@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile
     environment:
       WHISPER_BACKEND_URL: "http://backend:8000"
-      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token}"
+      WHISPER_ADMIN_TOKEN: "${WHISPER_ADMIN_TOKEN:-ctf-admin-token-7a4p1vq0}"
       WHISPER_REAL_FLAG: "${WHISPER_REAL_FLAG}"
       WHISPER_VICTIM_HANDLE: "${WHISPER_VICTIM_HANDLE:-victim-1}"
       WHISPER_ATTACKER_PHONE: "${WHISPER_ATTACKER_PHONE:-+15559001}"
