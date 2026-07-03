@@ -11,11 +11,6 @@
 
 An East Kernel Challenge in the Age of AI.
 
-Kernel race / page fengshui / dirty pagetable / nsjail escape (like CVE-2024-23380).
-A Linux-kernel pwn: the service boots a QEMU/KVM VM (`bzImage` + `initramfs`) per
-connection. Exploit the kernel bug inside the VM to read the flag from the in-VM
-readonly flag mount.
-
 ## Deployment
 
 The flag is injected via the `FLAG` environment variable at runtime; `server.py`
