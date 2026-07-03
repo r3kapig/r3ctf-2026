@@ -14,6 +14,7 @@ RUN apt-get update \
     build-essential \
     ca-certificates \
     cmake \
+    libboost-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

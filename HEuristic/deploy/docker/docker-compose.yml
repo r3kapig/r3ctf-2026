@@ -4,7 +4,7 @@ services:
     # image: test
     build: ../
     environment:
-      FLAG: "flag{local_test_flag}"
+      FLAG: "flag{c093a0a9-99eb-4cfc-8d1b-f71a44fb7310}"
     ports:
       - 9999:9999
     restart: unless-stopped

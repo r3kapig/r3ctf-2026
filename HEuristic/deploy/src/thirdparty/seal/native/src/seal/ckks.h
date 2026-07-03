@@ -187,10 +187,8 @@ namespace seal
         Encodes a vector for challenge CKKS logic using an exact integer
         scaling factor. This helper first computes the unscaled CKKS coefficient
         polynomial, rounds its coefficients to integers, then stores
-        integer_scale * m_i modulo the single CKKS coefficient modulus. The
-        result is transformed to NTT form so it can be encrypted normally.
-
-        This is intentionally limited to a one-prime coefficient modulus.
+        integer_scale * m_i modulo the CKKS coefficient modulus. The result is
+        transformed to NTT form so it can be encrypted normally.
         */
         template <
             typename T, typename = std::enable_if_t<
@@ -201,7 +199,8 @@ namespace seal
             Plaintext &destination, MemoryPoolHandle pool = MemoryManager::GetPool()) const
         {
             encode_chall_internal(
-                values.data(), values.size(), parms_id, integer_scale, destination, std::move(pool));
+                values.data(), values.size(), parms_id, std::vector<std::uint64_t>{ integer_scale }, destination,
+                std::move(pool));
         }
 
         template <
@@ -215,13 +214,37 @@ namespace seal
             encode_chall(values, context_.first_parms_id(), integer_scale, destination, std::move(pool));
         }
 
+        template <
+            typename T, typename = std::enable_if_t<
+                            std::is_same<std::remove_cv_t<T>, double>::value ||
+                            std::is_same<std::remove_cv_t<T>, std::complex<double>>::value>>
+        inline void encode_chall(
+            const std::vector<T> &values, parms_id_type parms_id,
+            const std::vector<std::uint64_t> &integer_scale_mods, Plaintext &destination,
+            MemoryPoolHandle pool = MemoryManager::GetPool()) const
+        {
+            encode_chall_internal(
+                values.data(), values.size(), parms_id, integer_scale_mods, destination, std::move(pool));
+        }
+
+        template <
+            typename T, typename = std::enable_if_t<
+                            std::is_same<std::remove_cv_t<T>, double>::value ||
+                            std::is_same<std::remove_cv_t<T>, std::complex<double>>::value>>
+        inline void encode_chall(
+            const std::vector<T> &values, const std::vector<std::uint64_t> &integer_scale_mods,
+            Plaintext &destination, MemoryPoolHandle pool = MemoryManager::GetPool()) const
+        {
+            encode_chall(values, context_.first_parms_id(), integer_scale_mods, destination, std::move(pool));
+        }
+
         /**
         Exports a CKKS plaintext in coefficient form modulo q. SEAL stores CKKS
-        plaintexts in NTT form; this helper applies inverse NTT and returns the
-        first and only coefficient-modulus component.
+        plaintexts in NTT form; this helper applies inverse NTT and returns
+        multi-precision coefficients modulo the full coefficient modulus.
         */
         inline void export_chall_coefficients(
-            const Plaintext &plain, std::vector<std::uint64_t> &destination,
+            const Plaintext &plain, std::vector<std::vector<std::uint64_t>> &destination,
             MemoryPoolHandle pool = MemoryManager::GetPool()) const
         {
             // Verify parameters.
@@ -242,14 +265,46 @@ namespace seal
             auto &parms = context_data.parms();
             std::size_t coeff_modulus_size = parms.coeff_modulus().size();
             std::size_t coeff_count = parms.poly_modulus_degree();
-            if (coeff_modulus_size != 1)
+
+            std::vector<std::uint64_t> coeffs(
+                plain.data(), plain.data() + util::mul_safe(coeff_count, coeff_modulus_size));
+            auto ntt_tables = context_data.small_ntt_tables();
+            for (std::size_t i = 0; i < coeff_modulus_size; i++)
             {
-                throw std::invalid_argument("challenge coefficient export requires exactly one coefficient modulus");
+                util::inverse_ntt_negacyclic_harvey(coeffs.data() + (i * coeff_count), ntt_tables[i]);
             }
 
-            destination.assign(plain.data(), plain.data() + coeff_count);
-            auto ntt_tables = context_data.small_ntt_tables();
-            util::inverse_ntt_negacyclic_harvey(destination.data(), ntt_tables[0]);
+            if (coeff_modulus_size != 1)
+            {
+                context_data.rns_tool()->base_q()->compose_array(coeffs.data(), coeff_count, pool);
+            }
+
+            destination.assign(coeff_count, std::vector<std::uint64_t>(coeff_modulus_size));
+            for (std::size_t i = 0; i < coeff_count; i++)
+            {
+                for (std::size_t j = 0; j < coeff_modulus_size; j++)
+                {
+                    destination[i][j] = coeffs[i * coeff_modulus_size + j];
+                }
+            }
+        }
+
+        inline void export_chall_coefficients(
+            const Plaintext &plain, std::vector<std::uint64_t> &destination,
+            MemoryPoolHandle pool = MemoryManager::GetPool()) const
+        {
+            std::vector<std::vector<std::uint64_t>> wide_destination;
+            export_chall_coefficients(plain, wide_destination, std::move(pool));
+            if (wide_destination.empty() || wide_destination[0].size() != 1)
+            {
+                throw std::invalid_argument("challenge coefficient export requires one-limb coefficients");
+            }
+
+            destination.resize(wide_destination.size());
+            for (std::size_t i = 0; i < wide_destination.size(); i++)
+            {
+                destination[i] = wide_destination[i][0];
+            }
         }
 #ifdef SEAL_USE_MSGSL
         /**
@@ -729,7 +784,8 @@ namespace seal
                             std::is_same<std::remove_cv_t<T>, double>::value ||
                             std::is_same<std::remove_cv_t<T>, std::complex<double>>::value>>
         void encode_chall_internal(
-            const T *values, std::size_t values_size, parms_id_type parms_id, std::uint64_t integer_scale,
+            const T *values, std::size_t values_size, parms_id_type parms_id,
+            const std::vector<std::uint64_t> &integer_scale_mods,
             Plaintext &destination, MemoryPoolHandle pool) const
         {
             // Verify parameters.
@@ -756,14 +812,33 @@ namespace seal
             auto &coeff_modulus = parms.coeff_modulus();
             std::size_t coeff_modulus_size = coeff_modulus.size();
             std::size_t coeff_count = parms.poly_modulus_degree();
-            if (coeff_modulus_size != 1)
+
+            std::vector<std::uint64_t> scale_mods(coeff_modulus_size);
+            if (integer_scale_mods.size() == 1)
             {
-                throw std::invalid_argument("challenge encoding requires exactly one coefficient modulus");
+                for (std::size_t i = 0; i < coeff_modulus_size; i++)
+                {
+                    scale_mods[i] = util::barrett_reduce_64(integer_scale_mods[0], coeff_modulus[i]);
+                }
+            }
+            else if (integer_scale_mods.size() == coeff_modulus_size)
+            {
+                for (std::size_t i = 0; i < coeff_modulus_size; i++)
+                {
+                    scale_mods[i] = util::barrett_reduce_64(integer_scale_mods[i], coeff_modulus[i]);
+                }
+            }
+            else
+            {
+                throw std::invalid_argument("integer_scale_mods has invalid size");
             }
 
-            auto &modulus = coeff_modulus[0];
-            std::uint64_t scale_mod = util::barrett_reduce_64(integer_scale, modulus);
-            if (!scale_mod)
+            bool nonzero_scale = false;
+            for (auto scale_mod : scale_mods)
+            {
+                nonzero_scale = nonzero_scale || (scale_mod != 0);
+            }
+            if (!nonzero_scale)
             {
                 throw std::invalid_argument("integer_scale must be non-zero modulo q");
             }
@@ -800,32 +875,73 @@ namespace seal
             fft_handler_.transform_from_rev(conj_values.get(), util::get_power_of_two(n), inv_root_powers_.get(), &fix);
 
             destination.parms_id() = parms_id_zero;
-            destination.resize(coeff_count);
+            destination.resize(util::mul_safe(coeff_count, coeff_modulus_size));
+
+            double coeff_modulus_bound = std::ldexp(1.0, context_data.total_coeff_modulus_bit_count());
+            auto coeffu(util::allocate_uint(coeff_modulus_size, pool));
 
             for (std::size_t i = 0; i < n; i++)
             {
                 double coeffd = std::round(conj_values[i].real());
-                if (!std::isfinite(coeffd) ||
-                    std::fabs(coeffd) > static_cast<double>(std::numeric_limits<std::int64_t>::max()))
+                if (!std::isfinite(coeffd) || std::fabs(coeffd) >= coeff_modulus_bound)
                 {
                     throw std::invalid_argument("unscaled coefficient is too large");
                 }
 
-                std::int64_t coeff = static_cast<std::int64_t>(std::llround(coeffd));
-                bool is_negative = coeff < 0;
-                std::uint64_t magnitude =
-                    is_negative ? (static_cast<std::uint64_t>(-(coeff + 1)) + 1) : static_cast<std::uint64_t>(coeff);
-                std::uint64_t coeff_mod = util::barrett_reduce_64(magnitude, modulus);
-                if (is_negative)
+                bool is_negative = std::signbit(coeffd);
+                coeffd = std::fabs(coeffd);
+
+                util::set_zero_uint(coeff_modulus_size, coeffu.get());
+                auto coeffu_ptr = coeffu.get();
+                double two_pow_64 = std::ldexp(1.0, 64);
+                while (coeffd >= 1.0 && coeffu_ptr != coeffu.get() + coeff_modulus_size)
                 {
-                    coeff_mod = util::negate_uint_mod(coeff_mod, modulus);
+                    *coeffu_ptr++ = static_cast<std::uint64_t>(std::fmod(coeffd, two_pow_64));
+                    coeffd /= two_pow_64;
                 }
-                destination[i] = util::multiply_uint_mod(coeff_mod, scale_mod, modulus);
+
+                context_data.rns_tool()->base_q()->decompose(coeffu.get(), pool);
+                for (std::size_t j = 0; j < coeff_modulus_size; j++)
+                {
+                    std::uint64_t coeff_mod = coeffu[j];
+                    if (is_negative)
+                    {
+                        coeff_mod = util::negate_uint_mod(coeff_mod, coeff_modulus[j]);
+                    }
+                    std::uint64_t tweak_lo = static_cast<std::uint64_t>(i + 1) * 0x9E3779B97F4A7C15ULL;
+                    tweak_lo += 0xBF58476D1CE4E5B9ULL;
+                    tweak_lo |= 1ULL;
+                    std::uint64_t tweak_hi = static_cast<std::uint64_t>(i + 1) * 0x94D049BB133111EBULL;
+                    tweak_hi += 0xD6E8FEB86659FD93ULL;
+                    tweak_hi |= 1ULL;
+
+                    std::uint64_t tweak_lo_mod = util::barrett_reduce_64(tweak_lo, coeff_modulus[j]);
+                    std::uint64_t tweak_hi_mod = util::barrett_reduce_64(tweak_hi, coeff_modulus[j]);
+                    std::uint64_t two_pow_64_mod = static_cast<std::uint64_t>(
+                        (static_cast<unsigned __int128>(1) << 64) % coeff_modulus[j].value());
+                    std::uint64_t tweak =
+                        util::multiply_uint_mod(tweak_hi_mod, two_pow_64_mod, coeff_modulus[j]);
+                    tweak += tweak_lo_mod;
+                    if (tweak >= coeff_modulus[j].value())
+                    {
+                        tweak -= coeff_modulus[j].value();
+                    }
+                    coeff_mod += tweak;
+                    if (coeff_mod >= coeff_modulus[j].value())
+                    {
+                        coeff_mod -= coeff_modulus[j].value();
+                    }
+                    destination[i + (j * coeff_count)] =
+                        util::multiply_uint_mod(coeff_mod, scale_mods[j], coeff_modulus[j]);
+                }
             }
 
-            util::ntt_negacyclic_harvey(destination.data(), ntt_tables[0]);
+            for (std::size_t i = 0; i < coeff_modulus_size; i++)
+            {
+                util::ntt_negacyclic_harvey(destination.data(i * coeff_count), ntt_tables[i]);
+            }
             destination.parms_id() = parms_id;
-            destination.scale() = static_cast<double>(integer_scale);
+            destination.scale() = 1.0;
         }
 
         template <
