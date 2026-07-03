@@ -33,8 +33,8 @@ FLAG_DISK_SIZE = 1024
 FLAG_MAX_BYTES = 127
 PASSWORD_MAX_BYTES = 127
 BOOT_TIMEOUT = 240.0
-MEMORY_MB = 512
-CPU_COUNT = 1
+MEMORY_MB = 4096
+CPU_COUNT = 2
 PUBLIC_HOST = "0.0.0.0"
 LOOPBACK_HOST = "127.0.0.1"
 
@@ -492,6 +492,8 @@ def main() -> int:
                     str(qemu),
                     "-machine",
                     f"pc,accel={accel()}",
+                    "-cpu",
+                    "max",
                     "-smp",
                     str(CPU_COUNT),
                     "-m",
