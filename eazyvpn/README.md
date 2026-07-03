@@ -11,9 +11,8 @@
 
 simple sslvpn... but something more.
 
-SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the `fw_ctf_host` binary,
-then pivot through the VPN into the internal `172.20.0.0/24` network to reach the
-flag service.
+SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the `fw_ctf_host` TLS
+gateway (listening on :4433) to read the flag at `/flag`.
 
 ## Deployment
 
@@ -28,4 +27,5 @@ cd deploy && ../infra.sh
 ## Files
 
 - `attachment/` — player handout (`fw_ctf_host` binary + its `lib/`).
-- `deploy/` — the live container (vpn gateway + internal decoy/flag services).
+- `deploy/` — the live container (the `fw_ctf_host` TLS gateway on :4433; the
+  platform-injected flag is written to `/flag` and `/app/flag` by `entrypoint.sh`).

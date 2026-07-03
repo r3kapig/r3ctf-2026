@@ -32,9 +32,18 @@ if [ -z "${SSLVPN_PASS:-}" ]; then
 fi
 export SSLVPN_USER SSLVPN_PASS
 
+# Launch fw_ctf_host DIRECTLY (kernel loads it as the main exe through its
+# PT_INTERP /lib64/ld-linux-x86-64.so.2), NOT via `/opt/lib/ld-linux --library-
+# path /opt/lib fw_ctf_host`. The ld-as-launcher form makes ld-linux the main
+# exe and has it mmap fw_ctf_host right beside libc, so the binary and libc end
+# up a fixed, small offset apart (low entropy between them). Direct exec keeps
+# them independently ASLR'd. The bundled libs in /opt/lib are still used via
+# LD_LIBRARY_PATH — the image's system ld is the same 2.43-2ubuntu2 build as
+# /opt/lib/ld-linux-x86-64.so.2, so library loading is byte-identical.
+export LD_LIBRARY_PATH=/opt/lib
 set +e
 while true; do
-    /opt/lib/ld-linux-x86-64.so.2 --library-path /opt/lib /app/fw_ctf_host
+    /app/fw_ctf_host
     echo "restarting..." >&2
     sleep 0.3
 done
