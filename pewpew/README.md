@@ -9,17 +9,11 @@
 
 ## Description
 
-Space is hard. Heap feng shui is harder.
+The spaceship is making noises again.
+Management says this is normal. Engineering says not to press the red buttons. The flight computer says everything is perfectly calibrated.
+Have fun.
 
-The captain ejected, the scouts are confused, and the engine insists on reporting
-how many watts it wasted every time you ask it to do anything. The spaceship is
-making noises again — management says this is normal, engineering says not to
-press the red buttons, and the flight computer says everything is perfectly
-calibrated.
-
-Can you land one perfect shot?
-
-A Windows LFH playground on Windows Server 2025. Reverse the supplied binaries,
+Challenge running on Windows Server 2025. Reverse the supplied binaries,
 then connect to the remote Windows host over RDP and find the flag in `flag.txt`.
 
 > You should NOT bruteforce the service; your exploit should be reliable in
