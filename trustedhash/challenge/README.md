@@ -49,9 +49,6 @@ docker run --rm -it --privileged \
 The container starts in `nix develop .#default`. `--privileged` is used for the
 local VM workflow because QEMU needs KVM access.
 
-Editors with Dev Containers support can also open this directory in the
-container described by `.devcontainer/devcontainer.json`.
-
 ## Image Build Details
 
 The player image is built from `docker/nix-builder.Dockerfile`:
