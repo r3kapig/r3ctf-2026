@@ -1,0 +1,24 @@
+name: mafuyuuuuu
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "8089:8089"
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+    expose:
+      - "4173"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    expose:
+      - "8080"
