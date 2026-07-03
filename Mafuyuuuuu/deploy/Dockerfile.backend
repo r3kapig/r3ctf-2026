@@ -21,6 +21,7 @@ COPY deploy/PaperTrailDesk.dll /app/PaperTrailDesk.dll
 COPY deploy/PaperTrailDesk.runtimeconfig.json /app/PaperTrailDesk.runtimeconfig.json
 COPY deploy/flag /flag
 COPY deploy/supervisord.conf /etc/supervisor/conf.d/papertrail.conf
+COPY deploy/entrypoint.sh /entrypoint.sh
 COPY --from=readflag-builder /readflag /readflag
 
 RUN mkdir -p /app/templates /app/exports \
@@ -30,9 +31,10 @@ RUN mkdir -p /app/templates /app/exports \
     && chmod 0644 /app/PaperTrailDesk.dll /app/PaperTrailDesk.runtimeconfig.json \
     && chmod 0755 /app/templates \
     && chmod 0755 /app/exports \
-    && chown root:root /flag /readflag \
+    && chown root:root /flag /readflag /entrypoint.sh \
     && chmod 0400 /flag \
+    && chmod 0755 /entrypoint.sh \
     && chmod 4555 /readflag
 
 EXPOSE 8080
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/papertrail.conf"]
+ENTRYPOINT ["/entrypoint.sh"]
