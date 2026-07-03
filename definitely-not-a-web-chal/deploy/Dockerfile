@@ -42,11 +42,10 @@ RUN cd php-src && \
 COPY ["init.sh", "/init.sh"]
 RUN useradd -m work && mkdir /home/work/scripts && chown work:work /home/work/scripts && chmod +x /init.sh
 COPY ["index.php", "/home/work/scripts/"]
-COPY ["flag", "/flag"]
 COPY ["readflag.c", "/tmp/readflag.c"]
 RUN cc /tmp/readflag.c -O2 -o /readflag && \
-    chown root:root /flag /readflag && \
-    chmod 0400 /flag && \
+    install -o root -g root -m 0400 /dev/null /flag && \
+    chown root:root /readflag && \
     chmod 4755 /readflag && \
     rm /tmp/readflag.c
 

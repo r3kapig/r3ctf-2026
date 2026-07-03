@@ -9,5 +9,5 @@ IMAGE="$REG/$NAME:$TAG"
 HOST_PORT="8082"
 CONTAINER_PORT="80"
 docker build . -t "$IMAGE"
-docker run --rm -d --cpus "0.5" --memory "256m" \
+docker run --rm -d -e FLAG='r3ctf{infra_test_flag}' --cpus "0.5" --memory "256m" \
   -p "$HOST_PORT:$CONTAINER_PORT" "$IMAGE"
