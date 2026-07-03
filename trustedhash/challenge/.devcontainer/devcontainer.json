@@ -1,6 +1,6 @@
 {
   "name": "Trusted Hash Challenge",
-  "image": "<image>:<tag>",
+  "image": "dongruixuan/trustedhash-devenv:latest",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "runArgs": [
     "--privileged",
@@ -19,8 +19,9 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "jnoortheen.nix-ide",
-        "rust-lang.rust-analyzer"
+        "bbenoist.Nix",
+        "rust-lang.rust-analyzer",
+        "ms-vscode.cpptools"
       ]
     }
   },
