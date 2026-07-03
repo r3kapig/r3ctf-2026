@@ -1,0 +1,12 @@
+services:
+  encrypted-activation:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/encrypted-activation:latest
+    container_name: r3ctf-2026-encrypted-activation
+    restart: unless-stopped
+    ports:
+      - "1336:1336"
+    environment:
+      FLAG: "${FLAG:-r3ctf{test_flag}}"

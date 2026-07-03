@@ -18,6 +18,7 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | r3ticket | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/r3ticket:latest` | 1.0 | 512m | pushed ✓ |
 | z3kapig | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/z3kapig:latest` | 2.0 | 1g | pushed ✓ |
 | polys | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/polys:latest` | 0.5 | 128m | pushed ✓ |
+| encrypted-activation | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/encrypted-activation:latest` | 1.0 | 512m | pushed ✓ |
 
 ## 本地运行 / 纯附件（不 push 镜像）
 
@@ -37,3 +38,4 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 - **trustedhash**：push 的是 per-team 部署的 `trusted-hash-portal` 镜像（entrypoint `trusted-hash-portal`，约 7.57GB，远端已有故直接 retag，未重新 build）。运行需 `--privileged` + KVM，每队一个实例并通过 `FLAG` 注入动态 flag。选手开发用的 `nix-builder` 镜像是单独的重型 Nix 构建，未推送。
 - **whisper**：多服务栈（backend / judge / victim-runner），victim-runner 运行需 `--privileged --device /dev/kvm`。现部署在 `vm.ctf2026.r3kapig.com`（`./run.sh vm.ctf2026.r3kapig.com 8`，8 台 victim 设备）。`auth-pod/` 是 per-team 选手入口（鉴权 + 代理 lease/status/APK + 推 flag），judge 不暴露给选手。
 - **r3map**：Linux kernel pwn，每次连接起一个 QEMU/KVM VM（`bzImage` + `initramfs`，`-m 2048 -smp 4`）。运行需 `--device /dev/kvm` + `seccomp=unconfined`，flag 通过 `FLAG` 注入 VM 内只读挂载。
+- **encrypted-activation**：FHE crypto，`task.py` 是 stdin/stdout 服务，`deploy/wrap.py` 绑 TCP **1336** 并把每连接桥接到一个 `task.py` 子进程（纯 CPU Python，无需特殊设备/特权）。flag 通过 `FLAG` 环境变量注入（`deploy/secret.py` 读取）。选手附件含 `task.py / fhe_core.py / lut / setup/client.bin` + 占位 `secret.py`。
