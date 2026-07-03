@@ -9,6 +9,30 @@
 
 ---
 
+## 当前部署实例清单（端口 / 账号 / 密码）
+
+下面这些来自 `/root/virtisol/vs.json`，是**当前这一轮**部署的玩家凭据。每次重新
+生成 `vs.json` 密码都会变；变了之后用第 3 节的命令重新读取，并更新这里。
+
+| 端口 | 账号 | 密码 | 连接命令 |
+|---|---|---|---|
+| 28300 | `hacker` | `VU0!28287750d2360b4d9` | `ssh -p 28300 hacker@vm.ctf2026.r3kapig.com` |
+| 28301 | `hacker` | `VU1!5726795ad027e0639` | `ssh -p 28301 hacker@vm.ctf2026.r3kapig.com` |
+| 28302 | `hacker` | `VU2!9503ae2718e421e49` | `ssh -p 28302 hacker@vm.ctf2026.r3kapig.com` |
+| 28303 | `hacker` | `VU3!1c673e17326cb3b09` | `ssh -p 28303 hacker@vm.ctf2026.r3kapig.com` |
+| 28304 | `hacker` | `VU4!80fa052d4106f1ad9` | `ssh -p 28304 hacker@vm.ctf2026.r3kapig.com` |
+| 28305 | `hacker` | `VU5!a19e1ecca68658779` | `ssh -p 28305 hacker@vm.ctf2026.r3kapig.com` |
+| 28306 | `hacker` | `VU6!82cb72596348d0b69` | `ssh -p 28306 hacker@vm.ctf2026.r3kapig.com` |
+| 28307 | `hacker` | `VU7!0c6032e7f599c11b9` | `ssh -p 28307 hacker@vm.ctf2026.r3kapig.com` |
+
+flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
+`r3ctf{8d9c9e48-2b4e-404d-9666-d015c707576c}`
+
+> 玩家要能从公网连进来，前提是 `vm.ctf2026.r3kapig.com` DNS 指向这台 VM 宿主机、
+> 且防火墙/安全组放行 28300–28307。
+
+---
+
 ## 0. 前置依赖（必须先放好，否则启动直接报错）
 
 `run.py` 启动前会从宿主机 `/root/archive/bin/` 把 3 个 COM 服务文件复制进客户机：
