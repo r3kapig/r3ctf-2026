@@ -2,7 +2,7 @@
   description = "Trusted Hash CTF operator workspace";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/a0374025a863d007d98e3297f6aa46cc3141c2f0";
+    nixpkgs.url = "github:NixOS/nixpkgs/95ca1e203c0750115fd4a6f17d5a245dfe6b1edd";
     challenge = {
       url = "path:./challenge";
       inputs.nixpkgs.follows = "nixpkgs";

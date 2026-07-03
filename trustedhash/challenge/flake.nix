@@ -2,7 +2,7 @@
   description = "Dev shell with qemu, swtpm, and openssl";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041";
+    nixpkgs.url = "github:NixOS/nixpkgs/95ca1e203c0750115fd4a6f17d5a245dfe6b1edd";
   };
 
   outputs = { self, nixpkgs }:

@@ -113,6 +113,7 @@
                     "virtio_pci"
                     "virtio_blk"
                     "ext4"
+                    "vfat"
                   ];
                   kernelModules = [ "trusted_hash" ];
                   systemd.suppressedUnits = [
@@ -158,6 +159,15 @@
                       EXT4_FS = yes;
                       JBD2 = yes;
                       CRC16 = yes;
+                      FAT_FS = yes;
+                      MSDOS_FS = yes;
+                      VFAT_FS = yes;
+                      NLS = yes;
+                      NLS_CODEPAGE_437 = lib.mkForce yes;
+                      NLS_ISO8859_1 = lib.mkForce yes;
+                      NLS_UTF8 = lib.mkForce yes;
+                      FAT_DEFAULT_CODEPAGE = freeform "437";
+                      FAT_DEFAULT_IOCHARSET = freeform "iso8859-1";
                       TCG_TPM = yes;
                       TCG_CRB = yes;
                       TCG_TIS_CORE = yes;

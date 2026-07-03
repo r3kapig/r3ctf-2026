@@ -14,6 +14,7 @@ use trusted_hash_common::{read_request, write_response, Request, Response, DEFAU
 
 const CLIENT_IO_TIMEOUT: Duration = Duration::from_secs(15);
 const ROOT_PASSWORD_FUSE: &str = "/var/lib/trusted-hash-agent/root-pass-provision-complete";
+const ROOT_PASSWORD_STATE_DIR: &str = "/var/lib/trusted-hash-agent";
 
 fn main() -> io::Result<()> {
     let addr = env::args()
@@ -110,8 +111,26 @@ fn provision_root_password(password: &str) -> io::Result<()> {
             String::from_utf8_lossy(&output.stderr)
         )));
     }
-    fs::write(ROOT_PASSWORD_FUSE, b"1\n")?;
+    let mut fuse = fs::File::create(ROOT_PASSWORD_FUSE)?;
+    fuse.write_all(b"1\n")?;
+    fuse.sync_all()?;
+    fs::File::open(ROOT_PASSWORD_STATE_DIR)?.sync_all()?;
+    sync_filesystems()?;
     Ok(())
+}
+
+fn sync_filesystems() -> io::Result<()> {
+    let output = Command::new("/run/current-system/sw/bin/sync")
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .output()?;
+    if output.status.success() {
+        return Ok(());
+    }
+    Err(io::Error::other(format!(
+        "sync failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    )))
 }
 
 fn dispatch(dev: &TrustedHashDevice, request: Request) -> Response {

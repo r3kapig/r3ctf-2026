@@ -16,9 +16,11 @@
   };
 
   environment.systemPackages = with pkgs; [
+    coreutils
     tpm2-tools
     python3
     openssl
+    parted
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
