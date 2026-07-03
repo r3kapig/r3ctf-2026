@@ -8,13 +8,24 @@ Mafuyuuuuu is a Project SEKAI themed .NET web challenge. The public service is a
 
 ## Deploy
 
+Local dev (docker compose, nginx proxies via service names):
+
 ```sh
 ./infra.sh
 ```
 
 The service listens on `http://127.0.0.1:8089/`.
 
-The test flag is stored at `deploy/deploy/flag`.
+Production (single pod, three containers — nginx proxies to `127.0.0.1`):
+
+```sh
+kubectl apply -f deploy/k8s.yaml
+```
+
+Images: `mafuyuuuuu-{nginx,frontend,backend}:latest`. The pod exposes port
+`8089` (the `k8s.yaml` Service uses NodePort `30089`). The flag is mounted into
+the backend at `/flag` from the `mafuyuuuuu-flag` ConfigMap — replace it with
+the real/dynamic flag for the event. The local test flag is `deploy/deploy/flag`.
 
 ## Player Attachment
 
