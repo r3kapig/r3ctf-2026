@@ -1,0 +1,18 @@
+name: inside
+
+services:
+  inside:
+    build:
+      context: .
+    image: inside:latest
+    container_name: inside
+    restart: unless-stopped
+    init: true
+    environment:
+      # placeholder for local testing; the platform injects the real dynamic FLAG
+      FLAG: "r3ctf{to_end_up_where_we_are_meant_to_be}"
+    ports:
+      - "${INSIDE_PORT:-9999}:9999"
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
