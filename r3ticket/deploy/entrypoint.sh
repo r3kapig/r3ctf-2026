@@ -5,7 +5,15 @@ set -eu
 # flag.txt (root-only) and scrub the env. Falls back to a placeholder for local
 # runs. The entrypoint runs as the ctf user which owns flag.txt.
 FLAG_FILE=/home/ctf/flag.txt
-INSERT_FLAG="${FLAG:-r3ctf{TEST_Dynamic_FLAG}}"
+# NOTE: do NOT write the default as ${FLAG:-r3ctf{...}} — the `}` inside the
+# parameter expansion is parsed as the closing brace, so when FLAG is set a stray
+# `}` gets appended (producing a double `}}` in the flag). Use an explicit
+# if/else so the placeholder can keep its braces safely.
+if [ -z "${FLAG:-}" ]; then
+    INSERT_FLAG="r3ctf{TEST_Dynamic_FLAG}"
+else
+    INSERT_FLAG="$FLAG"
+fi
 export FLAG=no_FLAG
 FLAG=no_FLAG
 chmod 0600 "$FLAG_FILE" 2>/dev/null || true
