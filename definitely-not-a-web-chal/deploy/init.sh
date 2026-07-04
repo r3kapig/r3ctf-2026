@@ -13,4 +13,4 @@ chmod 0400 /flag
 unset FLAG
 
 service nginx start
-exec env -u FLAG /app/php-bin/DEBUG/sbin/php-fpm -c /app/php-bin/DEBUG/etc/php.ini --nodaemonize
+exec /app/php-bin/DEBUG/sbin/php-fpm -c /app/php-bin/DEBUG/etc/php.ini --nodaemonize
