@@ -1,0 +1,40 @@
+FROM debian:bookworm-slim AS readflag-builder
+
+RUN sed -i 's|http://deb.debian.org/debian-security|http://mirror.sg.gs/debian-security|g; s|http://deb.debian.org/debian|http://mirror.sg.gs/debian|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update \
+    && apt-get install -y --no-install-recommends gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY deploy/readflag.c /tmp/readflag.c
+RUN gcc -O2 -Wall -Wextra -o /readflag /tmp/readflag.c
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim
+
+RUN sed -i 's|http://deb.debian.org/debian-security|http://mirror.sg.gs/debian-security|g; s|http://deb.debian.org/debian|http://mirror.sg.gs/debian|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 update \
+    && apt-get install -y --no-install-recommends supervisor \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 appuser
+
+WORKDIR /app
+COPY deploy/PaperTrailDesk.dll /app/PaperTrailDesk.dll
+COPY deploy/PaperTrailDesk.runtimeconfig.json /app/PaperTrailDesk.runtimeconfig.json
+COPY deploy/flag /flag
+COPY deploy/supervisord.conf /etc/supervisor/conf.d/papertrail.conf
+COPY deploy/entrypoint.sh /entrypoint.sh
+COPY --from=readflag-builder /readflag /readflag
+
+RUN mkdir -p /app/templates /app/exports \
+    && chown root:root /app /app/PaperTrailDesk.dll /app/PaperTrailDesk.runtimeconfig.json \
+    && chown appuser:appuser /app/templates /app/exports \
+    && chmod 0555 /app \
+    && chmod 0644 /app/PaperTrailDesk.dll /app/PaperTrailDesk.runtimeconfig.json \
+    && chmod 0755 /app/templates \
+    && chmod 0755 /app/exports \
+    && chown root:root /flag /readflag /entrypoint.sh \
+    && chmod 0400 /flag \
+    && chmod 0755 /entrypoint.sh \
+    && chmod 4555 /readflag
+
+EXPOSE 8080
+ENTRYPOINT ["/entrypoint.sh"]

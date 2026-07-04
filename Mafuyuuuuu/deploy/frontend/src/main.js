@@ -254,7 +254,6 @@ let nextStepTime = 0;
 let noiseBuffer = null;
 let beatTimer = 0;
 let pageVisible = true;
-let signalCooldownTimer = 0;
 const stepTime = 60 / 132 / 2;
 
 const modeText = {
@@ -286,28 +285,6 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll("\"", "&quot;");
-}
-
-function setSignalCooldown(seconds = 2) {
-  const button = $("sendPost");
-  let remaining = seconds;
-
-  clearInterval(signalCooldownTimer);
-  button.disabled = true;
-  button.textContent = `Wait ${remaining}s`;
-
-  signalCooldownTimer = setInterval(() => {
-    remaining -= 1;
-    if (remaining <= 0) {
-      clearInterval(signalCooldownTimer);
-      signalCooldownTimer = 0;
-      button.disabled = false;
-      button.textContent = "Send signal";
-      return;
-    }
-
-    button.textContent = `Wait ${remaining}s`;
-  }, 1000);
 }
 
 function setScreen(name) {
@@ -409,15 +386,8 @@ async function sendSignalPost() {
     body: JSON.stringify({ category, message })
   });
   const text = await res.text();
-  if (res.status === 429) {
-    setSignalCooldown(2);
-    throw new Error("Signal cooling down");
-  }
   if (!res.ok) throw new Error(text || "signal failed");
-
-  const payload = JSON.parse(text);
-  $("postReceipt").textContent = JSON.stringify(payload, null, 2);
-  setSignalCooldown(2);
+  $("postReceipt").textContent = JSON.stringify(JSON.parse(text), null, 2);
   notify("Signal sent");
 }
 

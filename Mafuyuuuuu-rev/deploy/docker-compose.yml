@@ -1,0 +1,28 @@
+name: mafuyuuuuu
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "8089:8089"
+    # The baked image config uses 127.0.0.1 (pod); override it for compose so
+    # nginx reaches the sibling services by their docker-compose DNS names.
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+    expose:
+      - "4173"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    expose:
+      - "8080"
