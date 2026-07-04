@@ -1,7 +1,7 @@
 #!/bin/sh
-# Build + run eazyvpn. Run FROM INSIDE deploy/:  cd deploy && ../infra.sh
+# Build + run ezvpn. Run FROM INSIDE deploy/:  cd deploy && ../infra.sh
 set -e
-NAME="eazyvpn"
+NAME="ezvpn"
 REG="registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700"
 TAG="latest"
 IMAGE="$REG/$NAME:$TAG"

@@ -18,7 +18,7 @@ RUN mkdir -p /app/certs && \
     openssl req -x509 -newkey rsa:2048 -nodes \
         -keyout /app/certs/server.key \
         -out /app/certs/server.crt \
-        -days 3650 -subj "/CN=eazyvpn.local" >/dev/null 2>&1 && \
+        -days 3650 -subj "/CN=ezvpn.local" >/dev/null 2>&1 && \
     chmod 600 /app/certs/server.key
 
 RUN touch /app/flag && chmod 444 /app/flag

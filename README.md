@@ -32,7 +32,7 @@ VM host, not in git.
 Images built and pushed to
 `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`:
 
-`eazyvpn`, `HEuristic`, `rECp1cG`, `P1gROXY`, `netshare`, `trustedhash`,
+`ezvpn`, `HEuristic`, `rECp1cG`, `P1gROXY`, `netshare`, `trustedhash`,
 `r3map`, `TsukisRhythmGame`, `definitely-not-a-web-chal`, `r3ticket`, `z3kapig`,
 `polys`.
 
