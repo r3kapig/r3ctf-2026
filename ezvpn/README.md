@@ -11,8 +11,8 @@
 
 simple sslvpn... but something more.
 
-SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the `fw_ctf_host` TLS
-gateway (listening on :4433) to read the flag at `/flag`.
+SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the TLS gateway
+(listening on :4433) to read the flag at `/flag`.
 
 ## Deployment
 
@@ -27,7 +27,7 @@ cd deploy && ../infra.sh
 ## Files
 
 - `attachment/` — player handout: the full local-repro build context
-  (`Dockerfile`, `docker-compose.yml`, `entrypoint.sh`, the `fw_ctf_host` binary,
+  (`Dockerfile`, `docker-compose.yml`, `entrypoint.sh`, the `eazyvpn` binary,
   and its `lib/`). Players can `docker compose up` to reproduce the environment
   locally (the attachment `entrypoint.sh` uses a fixed test password, no dynamic
   flag).

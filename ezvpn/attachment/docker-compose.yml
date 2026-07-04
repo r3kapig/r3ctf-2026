@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  ezvpn:
+  eazyvpn:
     build: ./
     ports:
       - "9000:4433"
