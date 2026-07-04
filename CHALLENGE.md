@@ -32,8 +32,8 @@ Registry: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<name>:latest`
 | teRRibleRing | 纯附件：`attachment/{task.sage, samples.txt}`（Ring-LWE，SageMath，离线分析）。 |
 | lift | 纯附件：`attachment/chall`（静态 ELF，IR / lambda VM 逆向，离线分析）。 |
 | funnygame | 纯附件：`attachment/FunnyGame.7z`（Unity IL2CPP 游戏逆向，离线分析）。静态 flag。 |
-| virtisol | VM 主机部署（`vm.ctf2026.r3kapig.com`），不构建/push。8 个 QEMU/KVM Windows 实例，端口 28300–28307，SSH 登录。静态 flag。运维见 `virtisol/OPS.md`。 |
-| winkernel | VM 主机部署（`vm.ctf2026.r3kapig.com`），不构建/push。8 个 QEMU/KVM Windows 实例，端口 28400–28407，SSH 登录。静态 flag。运维见 `winkernel/OPS.md`。 |
+| babycom | VM 主机部署（`vm.ctf2026.r3kapig.com`），不构建/push。8 个 QEMU/KVM Windows 实例，端口 28300–28307，SSH 登录。静态 flag `r3ctf{intended-flag-extraction-without-code-exec}`。运维见 `babycom/OPS.md`。 |
+| someday | VM 主机部署（`vm.ctf2026.r3kapig.com`），不构建/push。8 个 QEMU/KVM Windows 实例，端口 28400–28407，SSH 登录。静态 flag `r3ctf{pwn2own_for_the_win!!!!!!!}`。运维见 `someday/OPS.md`。 |
 
 ## 备注
 

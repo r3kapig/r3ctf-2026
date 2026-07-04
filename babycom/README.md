@@ -1,4 +1,4 @@
-# virtisol
+# babycom
 
 - **Category:** Pwn
 - **Author:** 
@@ -24,7 +24,7 @@ git). The COM service artifacts (`vaultsvc.exe`, `vaultsvc_ps.dll`,
 `/root/archive/bin/` on the host before launch (see `OPS.md` §0).
 
 - **Ports:** 28300–28307 (one SSH per instance)
-- **Flag:** `r3ctf{8d9c9e48-2b4e-404d-9666-d015c707576c}` (static, same for all)
+- **Flag:** `r3ctf{intended-flag-extraction-without-code-exec}` (static, same for all)
 - **Files in this repo:** `run.py` (per-instance launcher), `multirun.py`
   (launch all 8), `run_one.sh` (restart one), `run_example.py` /
   `multirun_example.py` (config examples), and `OPS.md`.

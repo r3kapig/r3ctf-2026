@@ -71,5 +71,5 @@ If the Dockerfile isn't at the context root:
 - `CHALLENGE.md` — image / CPU / memory / port / status per challenge.
 - `DEPLOY.md` — remote build playbook + known issues / fixes.
 - `whisper/README.md`, `whisper/auth-pod/README.md` — whisper stack + auth pod.
-- `virtisol/OPS.md`, `winkernel/OPS.md` — VM-hosted challenge runbooks.
+- `babycom/OPS.md`, `someday/OPS.md` — VM-hosted challenge runbooks.
 - `reference/creating-ctf-docker/SKILL.md` — the convention source (gitignored).

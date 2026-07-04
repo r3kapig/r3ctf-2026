@@ -1,10 +1,10 @@
-# winkernel 运维指南
+# someday 运维指南
 
-- 题目镜像: `/root/winkernel/ctf.qcow2`
-- 实例配置: `/root/winkernel/wk.json`（8 个实例，端口 28400–28407）
+- 题目镜像: `/root/someday/ctf.qcow2`
+- 实例配置: `/root/someday/wk.json`（8 个实例，端口 28400–28407）
 - 玩家账号: `hacker` / `hacker123@`（在 `run.py` 里写死，所有实例共用）
-- flag: `r3ctf{1d5757f5-ee23-487b-bcd5-b4319265792e}`（全题同一个）
-- tmux session: `winkernel`
+- flag: `r3ctf{pwn2own_for_the_win!!!!!!!}`（全题同一个）
+- tmux session: `someday`
 - 日志: `/tmp/logs/<port>.log`
 
 ---
@@ -23,15 +23,15 @@
 ## 1. 启动（全部 8 台）
 
 ```bash
-tmux new-session -d -s winkernel \
-  'cd /root/winkernel && python3 -u multirun.py /root/winkernel/wk.json'
+tmux new-session -d -s someday \
+  'cd /root/someday && python3 -u multirun.py /root/someday/wk.json'
 ```
 
 ## 2. 查看状态
 
 ```bash
 tmux ls                                            # session 是否存在
-tmux capture-pane -t winkernel -p | tail -40       # 启动日志（含每台密码/flag）
+tmux capture-pane -t someday -p | tail -40       # 启动日志（含每台密码/flag）
 ss -ltnp | grep -E ':2840[0-7]'                    # 8 个端口应都在 LISTEN
 ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 8 个 qemu
 tail -f /tmp/logs/28400.log                        # 单台 qemu 日志
@@ -48,14 +48,14 @@ ssh -p 28403 hacker@vm.ctf2026.r3kapig.com      # 密码 hacker123@
 全部 8 台：
 
 ```bash
-tmux kill-session -t winkernel
-pkill -f '[f]ile=/root/winkernel/ctf.qcow2' 2>/dev/null || true   # 清残留 qemu
+tmux kill-session -t someday
+pkill -f '[f]ile=/root/someday/ctf.qcow2' 2>/dev/null || true   # 清残留 qemu
 ```
 
 单台（例 28403）：
 
 ```bash
-tmux kill-session -t wk-28403 2>/dev/null || true
+tmux kill-session -t sd-28403 2>/dev/null || true
 pkill -f '[r]un.py --ssh-port 28403' 2>/dev/null || true
 ```
 
@@ -64,20 +64,20 @@ pkill -f '[r]un.py --ssh-port 28403' 2>/dev/null || true
 全部 8 台 = 先关后开：
 
 ```bash
-tmux kill-session -t winkernel 2>/dev/null
-pkill -f '[f]ile=/root/winkernel/ctf.qcow2' 2>/dev/null || true
+tmux kill-session -t someday 2>/dev/null
+pkill -f '[f]ile=/root/someday/ctf.qcow2' 2>/dev/null || true
 sleep 3
-tmux new-session -d -s winkernel \
-  'cd /root/winkernel && python3 -u multirun.py /root/winkernel/wk.json'
+tmux new-session -d -s someday \
+  'cd /root/someday && python3 -u multirun.py /root/someday/wk.json'
 ```
 
 单台（用 `run_one.sh` 从 `wk.json` 读该端口参数，例 28403）：
 
 ```bash
-tmux kill-session -t wk-28403 2>/dev/null
+tmux kill-session -t sd-28403 2>/dev/null
 pkill -f '[r]un.py --ssh-port 28403' 2>/dev/null || true
 sleep 2
-tmux new-session -d -s wk-28403 '/root/winkernel/run_one.sh 28403'
+tmux new-session -d -s sd-28403 '/root/someday/run_one.sh 28403'
 ```
 
 ## 5. 改 flag / 密码 / 端口

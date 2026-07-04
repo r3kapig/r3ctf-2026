@@ -1,4 +1,4 @@
-# winkernel
+# someday
 
 - **Category:** Pwn
 - **Author:** 
@@ -21,7 +21,7 @@ repo — it runs as 8 QEMU/KVM instances directly on the VM host
 (`ctf.qcow2`) and instance config (`wk.json`) live on the host (not in git).
 
 - **Ports:** 28400–28407 (one SSH per instance)
-- **Flag:** `r3ctf{1d5757f5-ee23-487b-bcd5-b4319265792e}` (static, same for all)
+- **Flag:** `r3ctf{pwn2own_for_the_win!!!!!!!}` (static, same for all)
 - **Files in this repo:** `run.py` (per-instance launcher), `multirun.py`
   (launch all 8), `run_one.sh` (restart one), `run_example.py` /
   `multirun_example.py` (config examples), and `OPS.md`.

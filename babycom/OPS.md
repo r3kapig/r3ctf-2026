@@ -1,17 +1,17 @@
-# virtisol 运维指南
+# babycom 运维指南
 
-- 题目镜像: `/root/virtisol/babycom.qcow2`
-- 实例配置: `/root/virtisol/vs.json`（8 个实例，端口 28300–28307）
+- 题目镜像: `/root/babycom/babycom.qcow2`
+- 实例配置: `/root/babycom/vs.json`（8 个实例，端口 28300–28307）
 - 玩家账号: `hacker` / `<每台随机密码>`（密码见 `vs.json` 的 `user_password` 字段）
-- flag: `r3ctf{8d9c9e48-2b4e-404d-9666-d015c707576c}`（全题同一个）
-- tmux session: `virtisol`
+- flag: `r3ctf{intended-flag-extraction-without-code-exec}`（全题同一个）
+- tmux session: `babycom`
 - 日志: `/tmp/logs/<port>.log`
 
 ---
 
 ## 当前部署实例清单（端口 / 账号 / 密码）
 
-下面这些来自 `/root/virtisol/vs.json`，是**当前这一轮**部署的玩家凭据。每次重新
+下面这些来自 `/root/babycom/vs.json`，是**当前这一轮**部署的玩家凭据。每次重新
 生成 `vs.json` 密码都会变；变了之后用第 3 节的命令重新读取，并更新这里。
 
 | 端口 | 账号 | 密码 | 连接命令 |
@@ -26,7 +26,7 @@
 | 28307 | `hacker` | `VU7!0c6032e7f599c11b9` | `ssh -p 28307 hacker@vm.ctf2026.r3kapig.com` |
 
 flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
-`r3ctf{8d9c9e48-2b4e-404d-9666-d015c707576c}`
+`r3ctf{intended-flag-extraction-without-code-exec}`
 
 > 玩家要能从公网连进来，前提是 `vm.ctf2026.r3kapig.com` DNS 指向这台 VM 宿主机、
 > 且防火墙/安全组放行 28300–28307。
@@ -61,15 +61,15 @@ flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
 ## 2. 启动（全部 8 台）
 
 ```bash
-tmux new-session -d -s virtisol \
-  'cd /root/virtisol && python3 -u multirun.py /root/virtisol/vs.json'
+tmux new-session -d -s babycom \
+  'cd /root/babycom && python3 -u multirun.py /root/babycom/vs.json'
 ```
 
 ## 3. 查看状态
 
 ```bash
 tmux ls                                            # session 是否存在
-tmux capture-pane -t virtisol -p | tail -40        # 启动日志（含每台密码/flag）
+tmux capture-pane -t babycom -p | tail -40        # 启动日志（含每台密码/flag）
 ss -ltnp | grep -E ':2830[0-7]'                    # 8 个端口应都在 LISTEN
 ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 8 个 qemu
 tail -f /tmp/logs/28300.log                        # 单台 qemu 日志
@@ -78,7 +78,7 @@ tail -f /tmp/logs/28300.log                        # 单台 qemu 日志
 查看某台的玩家密码（从配置里读）：
 
 ```bash
-python3 -c "import json;[print(e['ssh_port'],e['user_password']) for e in json.load(open('/root/virtisol/vs.json'))]"
+python3 -c "import json;[print(e['ssh_port'],e['user_password']) for e in json.load(open('/root/babycom/vs.json'))]"
 ```
 
 ## 4. 关闭
@@ -86,14 +86,14 @@ python3 -c "import json;[print(e['ssh_port'],e['user_password']) for e in json.l
 全部 8 台：
 
 ```bash
-tmux kill-session -t virtisol
-pkill -f '[f]ile=/root/virtisol/babycom.qcow2' 2>/dev/null || true   # 清残留 qemu
+tmux kill-session -t babycom
+pkill -f '[f]ile=/root/babycom/babycom.qcow2' 2>/dev/null || true   # 清残留 qemu
 ```
 
 单台（例 28303）：
 
 ```bash
-tmux kill-session -t vs-28303 2>/dev/null || true
+tmux kill-session -t bc-28303 2>/dev/null || true
 pkill -f '[r]un.py --ssh-port 28303' 2>/dev/null || true
 ```
 
@@ -102,20 +102,20 @@ pkill -f '[r]un.py --ssh-port 28303' 2>/dev/null || true
 全部 8 台 = 先关后开：
 
 ```bash
-tmux kill-session -t virtisol 2>/dev/null
-pkill -f '[f]ile=/root/virtisol/babycom.qcow2' 2>/dev/null || true
+tmux kill-session -t babycom 2>/dev/null
+pkill -f '[f]ile=/root/babycom/babycom.qcow2' 2>/dev/null || true
 sleep 3
-tmux new-session -d -s virtisol \
-  'cd /root/virtisol && python3 -u multirun.py /root/virtisol/vs.json'
+tmux new-session -d -s babycom \
+  'cd /root/babycom && python3 -u multirun.py /root/babycom/vs.json'
 ```
 
 单台（用 `run_one.sh` 从 `vs.json` 读该端口参数，例 28303）：
 
 ```bash
-tmux kill-session -t vs-28303 2>/dev/null
+tmux kill-session -t bc-28303 2>/dev/null
 pkill -f '[r]un.py --ssh-port 28303' 2>/dev/null || true
 sleep 2
-tmux new-session -d -s vs-28303 '/root/virtisol/run_one.sh 28303'
+tmux new-session -d -s bc-28303 '/root/babycom/run_one.sh 28303'
 ```
 
 ## 6. 改 flag / 密码 / 端口
