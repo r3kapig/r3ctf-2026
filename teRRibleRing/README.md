@@ -22,3 +22,9 @@ noisy samples from the random ones to recover the flag bits.
 ## Deployment
 
 Static attachment — no remote service. Players analyze `samples.txt` offline.
+
+## Flag (static answer)
+
+```
+R3CTF{h0W_To_d3t3cT_Vu1n3r4bi1ity_0F_RING?}
+```
