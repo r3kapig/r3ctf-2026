@@ -19,6 +19,7 @@ Stdlib only. Configure via env vars (see below). Run:  python3 server.py
   TIMEOUT     per-submission wall-clock seconds   (default: 120)
   MAX_UPLOAD  max submission bytes                (default: 65536)
   MAX_CONC    max concurrent simulations          (default: 2)
+  MAX_CYCLES  per-submission clock-cycle budget    (default: 5000000)
 """
 import html
 import http.server
@@ -45,6 +46,11 @@ PORT       = int(os.environ.get("PORT", "8080"))
 TIMEOUT    = int(os.environ.get("TIMEOUT", "120"))
 MAX_UPLOAD = int(os.environ.get("MAX_UPLOAD", str(64 * 1024)))
 MAX_CONC   = int(os.environ.get("MAX_CONC", "2"))
+# Deterministic per-submission clock-cycle budget, passed to SOC_run_sim as argv[1].
+# Bounds runaway/spinning submissions independently of the wall-clock TIMEOUT (a
+# spin now exits in a fraction of a second instead of holding a slot for TIMEOUT).
+# The reference solve finishes in <~60k cycles, so this is ~80x headroom.
+MAX_CYCLES = int(os.environ.get("MAX_CYCLES", str(5_000_000)))
 
 LINE_SIZE   = 64
 KERNEL_LINE = 0x2000 // LINE_SIZE  # 128 -- splice boundary; player owns lines < this (user region [0,0x2000))
@@ -59,20 +65,16 @@ _sem = threading.Semaphore(MAX_CONC)
 
 # ---- Player-facing ABI (kept in sync with solve/ref.s) -------------------------
 ABI = """\
-Target: MIPS64r6 SoC. Boots in KERNEL mode at 0x2000, then eret's to USER
-mode at your entry and runs your code.
-
 Your submission is the USER region only: loaded at 0x0, must fit below 0x2000.
-Anything at >= 0x2000 is DISCARDED (the kernel region is the server's secret).
+Anything at >= 0x2000 is DISCARDED.
 
-  entry (eret target) ..... 0x0c        your code starts here
-  exception vector ........ 0x00        a committed (loud) fault lands here
-  FLAG / WIN .............. 0x2030      reach here through the PAC gate with the
-                                        correct tag -> the kernel prints the flag
-                                        (jr pointer = (tag << 56) | 0x2030)
+  entry (eret target) ..... 0x0c
+  exception vector ........ 0x00
+  FLAG / WIN .............. 0x2030
+
   stdout MMIO ............. 0x20000010  sb/sd a byte; sd "HALT\\n" stops the sim
   cycle counter MMIO ...... 0x20000000  lw to read the cycle count
-  kernel region ........... [0x2000, 0x100000)  user-mode access here is PAC-checked
+  kernel region ........... [0x2000, 0x100000)
 
 The RTL, full memory map, and a build container are in the challenge attachment."""
 
@@ -187,8 +189,12 @@ def run_submission(body):
             for la in sorted(combined):
                 f.write("@%08x\n%s\n" % (la, combined[la]))
         try:
-            proc = subprocess.run([SIM], cwd=work, capture_output=True, text=True,
-                                   timeout=TIMEOUT)
+            # errors="replace": a submission may print arbitrary (non-UTF-8) bytes to
+            # the stdout MMIO; decode them lossily instead of raising UnicodeDecodeError
+            # (a ValueError) that would surface to the player as a bogus "rejected".
+            proc = subprocess.run([SIM, str(MAX_CYCLES)], cwd=work,
+                                   capture_output=True, text=True,
+                                   errors="replace", timeout=TIMEOUT)
             out = _clean(proc.stdout)
             if not out and proc.returncode != 0:
                 # sim failed to run (e.g. missing shared libs / bad memory image) --
@@ -198,7 +204,7 @@ def run_submission(body):
                       file=sys.stderr, flush=True)
             return out
         except subprocess.TimeoutExpired as e:
-            partial = _clean(e.stdout.decode() if isinstance(e.stdout, bytes)
+            partial = _clean(e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes)
                              else (e.stdout or ""))
             return "[timed out after %ds]\n%s" % (TIMEOUT, partial)
     finally:
@@ -206,8 +212,10 @@ def run_submission(body):
 
 
 def _clean(raw):
-    """Strip Verilog $display (cache) noise + NULs, cap size."""
-    return re.sub(r"TOP\.[^\n]*\n?", "", raw or "").replace("\0", "")[:MAX_OUTPUT]
+    """Strip Verilog $display (cache) noise + NULs, trim surrounding whitespace,
+    cap size."""
+    txt = re.sub(r"TOP\.[^\n]*\n?", "", raw or "").replace("\0", "")
+    return txt.strip()[:MAX_OUTPUT]
 
 
 def _extract_multipart(body, ctype):

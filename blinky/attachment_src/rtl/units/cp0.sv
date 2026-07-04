@@ -53,7 +53,7 @@ module cp0 #(
     // It is NOT derived from Status.KSU/EXL (both are reachable from user mode:
     // KSU via MTC0 $12, EXL via any exception, which vectors to the user-owned
     // 0x00 handler). Cleared by ERET (drop back to user).
-    logic true_kernel;
+    logic true_kernel  /* verilator public */;
 
     // -- PAC fault rate limiter --
     // Count *committed* PAC faults (exc 0x10) only; a squashed/speculative
@@ -61,8 +61,12 @@ module cp0 #(
     // committed faults the core is permanently `pac_locked`: the authenticated
     // gate can no longer raise privilege, so even the correct tag can no longer
     // enter the kernel. The count is per power-on (only reset clears it).
+    // Default 1: a SINGLE committed bad-tag fault locks the core, so a naive
+    // architectural brute force gets exactly one guess per power-on/submission
+    // (combined with the per-run random PAC key this makes cross-submission
+    // brute force infeasible).
 `ifndef PAC_FAULT_LIMIT
-`define PAC_FAULT_LIMIT 16'd8
+`define PAC_FAULT_LIMIT 16'd1
 `endif
     logic [15:0] pac_fault_count  /* verilator public */;
     logic        pac_locked       /* verilator public */;

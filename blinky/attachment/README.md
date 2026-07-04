@@ -81,8 +81,8 @@ docker run --rm -v "$PWD:/work" blinky-build exploit.s   # -> exploit.bin + expl
 It also runs inside the Docker image:
 
 ```sh
-docker run --rm -v "$PWD:/work" --entrypoint /opt/pacman-build/run_local.sh \
-       pacman-build exploit.mem
+docker run --rm -v "$PWD:/work" --entrypoint /opt/blinky-build/run_local.sh \
+       blinky-build exploit.mem
 ```
 
 The server's key is randomised per run, so you must recover the *real* tag against a live instance.
