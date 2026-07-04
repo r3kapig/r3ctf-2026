@@ -16,6 +16,8 @@ Another ticket challenge!
 - `attachment/chall.py` — player handout (the challenge source).
 - `deploy/` — the live service: `chall.py`, `Dockerfile`, `entrypoint.sh`,
   `run.sh`, `requirements.txt`, `docker-compose.yml`.
+- `solve/solve.py` — reference solver (sage + pwntools; connects to the service
+  and extracts the flag).
 
 ## Deployment
 

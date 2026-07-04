@@ -22,6 +22,9 @@ proof-of-work gate.
   flag.
 - `deploy/` — the live service: `src/` (same source + `flag.txt`), `Dockerfile`,
   `entrypoint.sh`, `run.sh`, `docker-compose.yml`.
+- `solve/` — reference solver (`solve.py` + `lll_cvp.py`); needs sage + pwntools
+  + sympy + the protocol source, and extracts the flag via the malicious CGGMP21
+  flow.
 
 ## Deployment
 
