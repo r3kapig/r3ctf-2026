@@ -1,0 +1,5 @@
+settings:
+  restrictions:
+    # 0 disables the per-IP registration cap. Docker/NAT can make many players
+    # appear as the same address, so the default value of 1 blocks valid users.
+    maxRegPerIp: 0

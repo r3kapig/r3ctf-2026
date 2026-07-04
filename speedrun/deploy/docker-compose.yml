@@ -1,0 +1,28 @@
+name: speedrun
+
+services:
+  minecraft:
+    build:
+      context: .
+      dockerfile: minecraft/Dockerfile
+    image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/speedrun-minecraft:latest
+    container_name: speedrun-minecraft
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    ports:
+      - "${SPEEDRUN_MC_PORT:-25565}:25565"
+    mem_limit: 3g
+    cpus: 2.0
+
+  checker:
+    build:
+      context: .
+      dockerfile: checker/Dockerfile
+    image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/speedrun-checker:latest
+    container_name: speedrun-checker
+    restart: unless-stopped
+    ports:
+      - "${SPEEDRUN_CHECKER_PORT:-31337}:31337"
+    mem_limit: 256m
+    cpus: 0.5

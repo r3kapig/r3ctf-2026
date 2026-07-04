@@ -1,0 +1,9 @@
+.git
+.DS_Store
+**/.DS_Store
+**/._*
+__pycache__
+**/__pycache__
+*.pyc
+k8s.yaml
+docker-compose.yml

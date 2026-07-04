@@ -1,0 +1,8 @@
+[package]
+name = "flaggenerator-test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ret2script = { path = "../../Rust/ret2script", default-features = false }
+hex = "0.4"

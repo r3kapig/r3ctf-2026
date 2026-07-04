@@ -1,0 +1,68 @@
+# speedrun — single shared instance (all teams connect to the same pod).
+# One pod running the Paper speedrun server + the TCP checker, exposed via a
+# NodePort Service on ports 30565 (minecraft) and 30337 (checker).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speedrun
+  labels:
+    app: speedrun
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: speedrun
+  template:
+    metadata:
+      labels:
+        app: speedrun
+    spec:
+      containers:
+        - name: minecraft
+          image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/speedrun-minecraft:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 25565
+              name: minecraft
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "3Gi"
+              cpu: "2000m"
+        - name: checker
+          image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/speedrun-checker:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 31337
+              name: checker
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: speedrun
+  labels:
+    app: speedrun
+spec:
+  type: NodePort
+  selector:
+    app: speedrun
+  ports:
+    - name: minecraft
+      protocol: TCP
+      port: 25565
+      targetPort: 25565
+      nodePort: 30565
+    - name: checker
+      protocol: TCP
+      port: 31337
+      targetPort: 31337
+      nodePort: 30337
