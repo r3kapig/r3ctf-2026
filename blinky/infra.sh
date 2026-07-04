@@ -10,7 +10,7 @@
 # Env: NAME (image name), PORT, FLAG (dynamic flag to bake), SERVER (health URL).
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NAME="${NAME:-spectre-pacman}"
+NAME="${NAME:-blinky}"
 PORT="${PORT:-8080}"
 REG="${REG:-registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700}"
 

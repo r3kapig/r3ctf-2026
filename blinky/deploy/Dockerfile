@@ -6,7 +6,7 @@
 # server.py, so every run authenticates a different tag.
 #
 # Build context is the challenge root:
-#   docker build -f deploy/Dockerfile -t <reg>/spectre-pacman:latest .
+#   docker build -f deploy/Dockerfile -t <reg>/blinky:latest .
 #
 # Base image note: SOC_run_sim is a PREBUILT x86-64 binary linked against the host
 # glibc/libstdc++ it was compiled on (currently GLIBC_2.38 / GLIBCXX_3.4.32). The
