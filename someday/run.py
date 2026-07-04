@@ -496,7 +496,7 @@ def main() -> int:
         ssh_connect(args.ssh_port, BOOTSTRAP_ADMIN_USER, args.admin_password, 30.0).close()
         expect_auth_failure(args.ssh_port, BOOTSTRAP_ADMIN_USER, BOOTSTRAP_ADMIN_PASSWORD, 15.0)
 
-        print(f"Timeout: {args.timeout} seconds")
+        print(f"Restart interval: {args.timeout} seconds (VM reboots fresh each cycle; accounts/flag unchanged)")
         print(f"pid={qemu_process.pid} port={args.ssh_port}")
         print(f"ssh=ssh -p {args.ssh_port} {HACKER_USER}@127.0.0.1")
         print(f"password={args.user_password}")
@@ -513,8 +513,22 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import signal as _signal
+
+    def _on_term(signum, frame):  # noqa: ANN001
+        # Run main()'s finally (stop proxy/qemu, remove workdir) before exiting.
+        raise SystemExit(0)
+
+    _signal.signal(_signal.SIGTERM, _on_term)
+    _signal.signal(_signal.SIGINT, _on_term)
     try:
-        raise SystemExit(main())
+        while True:
+            rc = main()
+            if rc != 0:
+                raise SystemExit(rc)
+            print("[restart] instance timed out; rebooting fresh VM...", flush=True)
+    except SystemExit:
+        raise
     except Exception as exc:
         print(f"[ERROR] {exc}", file=sys.stderr)
         raise SystemExit(1)
