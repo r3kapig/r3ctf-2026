@@ -26,7 +26,7 @@ MENU = '''==========
 |  [Q]uit
 =========='''
 
-crs, rlwe = None, None
+crs, st = None, None
 
 while True:
     print(MENU)
@@ -36,23 +36,17 @@ while True:
             raise Exception("ok~")
 
         elif inp == "c":
-            if crs is None:
-                tau = int(os.urandom(32).hex(), 16) % q
-                crs = [pow(tau, i, q)*G for i in range(n)]
-                del tau
-            else:
-                alpha = int(os.urandom(32).hex(), 16) % q
-                crs = [pow(alpha, i, q)*crs[i] for i in range(n)]
-                del alpha
+            tau = int(os.urandom(32).hex(), 16) % q
+            crs = [pow(tau, i, q)*G for i in range(n)]
+            del tau
             print(f"crs = {list(map(point2tuple, crs))}")
 
         elif inp == "r":
             st, _ = rlwe_gen()
-            rlwe = RLWEProof(st)
-            print(f"rlwe = {rlwe}")
+            print(f"st = {st}")
 
         elif inp == "p":
-            if crs is None or rlwe is None:
+            if crs is None or st is None:
                 print("nah...")
                 continue
             aux = ast.literal_eval(input("aux>"))
@@ -60,13 +54,14 @@ while True:
 
             aux = [
                 [[E(aux[0][i][j]) for j in range(2)] for i in range(n)],
-                [[E(aux[1][i][j]) for j in range(5)] for i in range(n)],
-                [[E(aux[2][i][j]) for j in range(2)] for i in range(n)]
+                [[E(aux[1][i][j]) for j in range(2)] for i in range(n)],
+                [E(aux[2][i]) for i in range(n)],
             ]
             proof = [
                 (list(map(tuple2point, R)), z) for R, z in proof
             ]
-            if rlwe.verify(crs, aux, proof):
+
+            if RLWEProof(st).verify(crs, aux, proof):
                 print("Congratulations!")
                 print(f"{os.environ.get('FLAG')}")
                 print("Hope you enjoy!")
