@@ -32,16 +32,16 @@ player ────────────────────────�
 docker build -t whisper-auth-pod .
 docker run --rm -p 5000:5000 \
   -e TEAM_ID=1 \
-  -e WHISPER_JUDGE_URL=http://vm.ctf2016.r3kapig.com:21801 \
-  -e WHISPER_BACKEND_URL=http://vm.ctf2016.r3kapig.com:21802 \
+  -e WHISPER_JUDGE_URL=http://vm.ctf2026.r3kapig.com:21801 \
+  -e WHISPER_BACKEND_URL=http://vm.ctf2026.r3kapig.com:21802 \
   -e WHISPER_ADMIN_TOKEN=<admin> -e FLAG='R3CTF{...}' \
   whisper-auth-pod
 ```
 
 Production endpoints:
 
-- judge (pod-only): `http://vm.ctf2016.r3kapig.com:21801`
-- backend (public, baked into APK): `http://vm.ctf2016.r3kapig.com:21802`
+- judge (pod-only): `http://vm.ctf2026.r3kapig.com:21801`
+- backend (public, baked into APK): `http://vm.ctf2026.r3kapig.com:21802`
 
 The platform spawns one pod per team with the per-team `TEAM_ID` / `FLAG`, and
 hands the player the pod URL. `WHISPER_JUDGE_URL` / `WHISPER_BACKEND_URL` /
