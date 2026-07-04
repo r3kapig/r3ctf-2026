@@ -34,6 +34,10 @@ start cooldown, `max-players=2` per instance.
 - `deploy/docker-compose.yml` — runs the `minemaze` image (Folia 26.1.2,
   RekaMaze + GrimAC plugins). Exposes `25565`.
 - `infra.sh` — pull + run a local test instance on `:25565`.
+- `source/` — the author's `rekamaze-folia` build context (Dockerfile, server
+  configs, RekaMaze plugin jar, maze datapack). Reference only — the image is
+  already built; large third-party server binaries are excluded (see
+  `source/README.md`).
 
 The server jar, plugins, world datapack and configs are all baked into the
 image; there is no player-side attachment (just connect with a vanilla client).

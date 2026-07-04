@@ -1,0 +1,20 @@
+name: rekamaze
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rekamaze-folia:latest
+    container_name: rekamaze-folia
+    working_dir: /server
+    stdin_open: true
+    tty: true
+    ports:
+      - "${MC_PORT:-25565}:25565"
+    environment:
+      INIT_MEMORY: "${INIT_MEMORY:-1G}"
+      MAX_MEMORY: "${MAX_MEMORY:-3G}"
+      JAVA_OPTS: "${JAVA_OPTS:-}"
+      FLAG: "${FLAG:?FLAG environment variable is required}"
+    restart: unless-stopped

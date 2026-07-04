@@ -1,0 +1,41 @@
+# ============================================================
+#  RekaMaze configuration
+# ============================================================
+
+# Maze dimensions in CELLS (not blocks). Block footprint is (2*width+1) x (2*height+1).
+maze:
+  width: 200
+  height: 200
+  doors: 8 # number of locked doors / keys (guaranteed solvable)
+  difficulty:
+    enabled: true
+    min-score: 55
+    max-score: 70
+    max-attempts: 64
+
+# How far around the player real blocks are materialised (Chebyshev radius, in blocks).
+# Smaller = more "blind", slower to explore. Blocks are only ever ADDED, never removed.
+bubble-radius: 8
+
+# Seconds before a running game ends with TIMEOUT.
+time-limit-seconds: 3600
+
+# Cooldown (seconds) before the same player can start a new run.
+start-cooldown-seconds: 10
+
+world:
+  name: rekamaze
+  # Each concurrent run gets its own slot spaced this many blocks apart so their
+  # Folia regions never overlap. Keep well inside the world border.
+  slot-spacing: 100000
+  # Y of the maze floor. Corridor air sits floor+1..floor+wall-height, ceiling above.
+  floor-y: 64
+  wall-height: 4
+
+# Block palette (must be valid Material names for your server version).
+materials:
+  floor: STONE
+  wall: STONE_BRICKS
+  ceiling: STONE_BRICKS
+
+# The awarded flag is read from the FLAG environment variable.

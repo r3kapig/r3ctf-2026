@@ -1,0 +1,10 @@
+# Large third-party server binaries / caches that are NOT part of the challenge
+# source. They ship inside the published minemaze:latest image (retagged from the
+# author's rekamaze-folia:latest). If you re-extract the full src.tar here, keep
+# these out of git — see source/README.md.
+assets/server/folia-26.1.2-8.jar
+assets/server/libraries/
+assets/server/cache/
+assets/server/versions/
+assets/server/plugins/grimac-bukkit-*.jar
+assets/server/plugins/GrimAC/
