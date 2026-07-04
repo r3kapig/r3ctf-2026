@@ -29,4 +29,6 @@ cd deploy && ../infra.sh
 
 ## Files
 
+- `attachment/` — player handout: `server.cc`, `CMakeLists.txt`, and `run.sh`
+  (build script; clones Microsoft SEAL and builds `he_server` locally).
 - `deploy/` — the live container (SEAL + `he_server` behind `socat` on port 9999).
