@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import platform
+import random
 import shutil
 import socket
 import subprocess
@@ -16,6 +17,13 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(line_buffering=True)
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(line_buffering=True)
+
+
+# Counts how many VM cycles this process has run. The first cycle sleeps a
+# random duration in [0, timeout] so that, across many instances started at the
+# same time, the first restart (and therefore every later restart) is spread
+# uniformly over the interval instead of firing all at once.
+_run_cycle = 0
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -586,7 +594,14 @@ def main() -> int:
         print(f"admin_password={args.admin_password}")
         print(f"flag={args.flag}")
         print(f"log={log_path}")
-        time.sleep(args.timeout)
+        global _run_cycle
+        if _run_cycle == 0:
+            sleep_for = random.uniform(0, args.timeout)
+            print(f"[stagger] first cycle = {sleep_for:.0f}s (random 0..{args.timeout:.0f}); steady = {args.timeout:.0f}s")
+        else:
+            sleep_for = args.timeout
+        _run_cycle += 1
+        time.sleep(sleep_for)
         return 0
     finally:
         public_port_guard.close()

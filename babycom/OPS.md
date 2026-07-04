@@ -1,7 +1,7 @@
 # babycom 运维指南
 
 - 题目镜像: `/root/babycom/babycom.qcow2`
-- 实例配置: `/root/babycom/vs.json`（8 个实例，端口 28300–28307）
+- 实例配置: `/root/babycom/vs.json`（16 个实例，端口 28300–28315）
 - 玩家账号: `hacker` / `<每台随机密码>`（密码见 `vs.json` 的 `user_password` 字段）
 - flag: `r3ctf{intended-flag-extraction-without-code-exec}`（全题同一个）
 - tmux session: `babycom`
@@ -24,12 +24,20 @@
 | 28305 | `hacker` | `VU5!a19e1ecca68658779` | `ssh -p 28305 hacker@vm.ctf2026.r3kapig.com` |
 | 28306 | `hacker` | `VU6!82cb72596348d0b69` | `ssh -p 28306 hacker@vm.ctf2026.r3kapig.com` |
 | 28307 | `hacker` | `VU7!0c6032e7f599c11b9` | `ssh -p 28307 hacker@vm.ctf2026.r3kapig.com` |
+| 28308 | `hacker` | `VU8!8a179d323cb6ad7cb` | `ssh -p 28308 hacker@vm.ctf2026.r3kapig.com` |
+| 28309 | `hacker` | `VU9!5307e842a802c4ef2` | `ssh -p 28309 hacker@vm.ctf2026.r3kapig.com` |
+| 28310 | `hacker` | `VU10!e21065fe67a4fc0fe` | `ssh -p 28310 hacker@vm.ctf2026.r3kapig.com` |
+| 28311 | `hacker` | `VU11!71e0406f1f2db054c` | `ssh -p 28311 hacker@vm.ctf2026.r3kapig.com` |
+| 28312 | `hacker` | `VU12!292a8b61365c64408` | `ssh -p 28312 hacker@vm.ctf2026.r3kapig.com` |
+| 28313 | `hacker` | `VU13!44dda69a0ff704b72` | `ssh -p 28313 hacker@vm.ctf2026.r3kapig.com` |
+| 28314 | `hacker` | `VU14!9b3f651b5697499f3` | `ssh -p 28314 hacker@vm.ctf2026.r3kapig.com` |
+| 28315 | `hacker` | `VU15!a01010b87e72e0aab` | `ssh -p 28315 hacker@vm.ctf2026.r3kapig.com` |
 
 flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
 `r3ctf{intended-flag-extraction-without-code-exec}`
 
 > 玩家要能从公网连进来，前提是 `vm.ctf2026.r3kapig.com` DNS 指向这台 VM 宿主机、
-> 且防火墙/安全组放行 28300–28307。
+> 且防火墙/安全组放行 28300–28315。
 
 ---
 
@@ -60,9 +68,14 @@ flag 保持不变（都从 `vs.json` 读，跨轮不变）。
 要改间隔：编辑 `vs.json` 里每个条目的 `"timeout"` 字段（单位秒），然后重启该
 实例。常用值：30 分钟 `1800`，1 小时 `3600`，2 小时 `7200`。
 
-> 8 台实例是同时启动的，所以 30 分钟到点也几乎同时到，会有一波约 1.5–2 分钟
-> 的"全 8 台同时重启"窗口（Windows 开机 + provisioning）。这是正常的；玩家断开
-> 重连即可。
+> **错峰重启**：`run.py` 的**第一轮**运行时长是 `random(0, timeout)` 均匀随机的，
+> 所以"第一次重启"（以及之后每隔 30 分钟的重启）就在 30 分钟窗口内均匀散开，
+> **不会 16 台同时重启**。稳态下大约每 ~2 分钟有一台实例重启一次（每次约 1.5–2
+> 分钟停机，玩家断开重连即可）。`multirun.py` 启动时还会在每台之间加 6 秒间隔，
+> 避免 16 台 Windows 同时上电造成的 I/O / CPU 尖峰。
+>
+> 注意：因为第一轮是 `random(0, timeout)`，个别实例的第一轮可能很短（几十秒），
+> 启动后不久就会先重启一次，这是预期行为，重启完就进入稳定的 30 分钟周期。
 
 ---
 
@@ -78,8 +91,8 @@ tmux new-session -d -s babycom \
 ```bash
 tmux ls                                            # session 是否存在
 tmux capture-pane -t babycom -p | tail -40        # 启动日志（含每台密码/flag）
-ss -ltnp | grep -E ':2830[0-7]'                    # 8 个端口应都在 LISTEN
-ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 8 个 qemu
+ss -ltnp | grep -E ':283(0[0-9]|1[0-5])'       # 16 个端口应都在 LISTEN
+ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 16 个 qemu
 tail -f /tmp/logs/28300.log                        # 单台 qemu 日志
 ```
 

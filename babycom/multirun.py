@@ -4,12 +4,17 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 RUN_SCRIPT = SCRIPT_DIR / "run.py"
+
+# Seconds to wait between launching each instance. Spreads the initial boot I/O
+# and CPU spike so many Windows VMs do not all power on at the exact same time.
+LAUNCH_STAGGER = 6.0
 
 
 class MultiRunError(RuntimeError):
@@ -83,6 +88,8 @@ def start_processes(entries: list[dict[str, Any]]) -> list[subprocess.Popen[str]
             cwd=str(SCRIPT_DIR),
         )
         processes.append(process)
+        if index < len(entries):
+            time.sleep(LAUNCH_STAGGER)
     return processes
 
 
