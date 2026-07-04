@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  eazyvpn:
+    build: ./
+    ports:
+      - "9000:4433"
+    restart: unless-stopped
