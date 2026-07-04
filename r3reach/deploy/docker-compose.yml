@@ -1,0 +1,17 @@
+name: r3reach
+
+services:
+  r3reach:
+    build:
+      context: .
+    image: r3reach:latest
+    container_name: r3reach
+    restart: unless-stopped
+    init: true
+    environment:
+      # placeholder for local testing; the platform injects the real dynamic FLAG
+      FLAG: "r3ctf{test_flag}"
+    ports:
+      - "${R3REACH_PORT:-25565}:25565"
+    mem_limit: 3g
+    cpus: 2.0
