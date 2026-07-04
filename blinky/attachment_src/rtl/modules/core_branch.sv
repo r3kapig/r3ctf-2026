@@ -1,5 +1,5 @@
 `ifdef ENABLE_PAC
-// PAC configuration -- overridable per CTF build with +define+PAC_*=...
+// PAC configuration -- overridable at build time with +define+PAC_*=...
 // (kept as macros because core_branch is a bare-core module and may not import
 //  the SoC-level `configurations` package). The key is NOT a macro: it lives in
 //  a CP0 register and arrives on the `pac_key` port.
@@ -176,15 +176,17 @@ module core_branch (
                         next_fetch_pc = jr_resolved;
                         flush = 1'b1;
                     end
-                    // A bad-tag gate is deferred (does NOT commit) only when it
-                    // mispredicted a real BTB prediction, i.e. predicted_npc is not
-                    // the cold fall-through pc4. A cold/unpredicted bad jr commits
-                    // its fault (and is rate-limited). Good gates (pac_exc==0) are
-                    // never deferred, so a correct tag always enters the kernel.
-                    pac_gate_valid = pac_cross
-                        && !(pac_exc
-                             && (ID_regs.predicted_npc != ID_regs.pc4)      // BTB hit
-                             && (jr_resolved != ID_regs.predicted_npc));    // mispredicted
+                    // A bad-tag gated JR ALWAYS commits its fault (rate-limited): the
+                    // commit must not be deferred by a BTB misprediction, or a
+                    // perpetually-mispredicted (BTB-aliased) architectural JR could
+                    // steer each wrong tag to the PAC handler without ever committing
+                    // a fault, sidestepping the rate limiter. The gate decision is
+                    // therefore resolved from the tag alone, independent of the branch
+                    // prediction. A genuinely wrong-path JR (fetched behind an OLDER
+                    // mispredicted branch) is still squashed by the gate flush-gating
+                    // in core.sv, so this does not commit faults for instructions that
+                    // never retire.
+                    pac_gate_valid = pac_cross;
                     pac_gate_ok    = !pac_exc;
                     pac_jr_train        = 1'b1;
                     pac_jr_train_target = jr_resolved;

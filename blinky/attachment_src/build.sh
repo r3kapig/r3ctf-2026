@@ -9,8 +9,8 @@
 # See README.md for the memory map.
 #
 # Toolchain-free via the provided Docker image:
-#   docker build -t pacman-build .
-#   docker run --rm -v "$PWD:/work" pacman-build exploit.s
+#   docker build -t blinky-build .
+#   docker run --rm -v "$PWD:/work" blinky-build exploit.s
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
