@@ -41,6 +41,11 @@ cd deploy && ../infra.sh
 - **Port:** container `25565` (Minecraft), host `25565`
 - **Flag env:** `FLAG`
 - **Notes:** the server JVM runs with `-Xms1G -Xmx2G`; give the container ~3 GB
-  RAM. On first boot the Paper launcher downloads the matching vanilla server
-  jar (needs egress to the Paper/Mojang CDN); subsequent starts use the cached
-  jar. `max-players=1`, adventure mode, peaceful void world.
+  RAM. The matching vanilla server jar + generated world are **baked into the
+  image at build time** (the Dockerfile starts the server once, waits for
+  `Done`, then shuts it down), so the runtime starts in ~15 s and needs **no
+  egress** — it even reaches `Done` under `--network none`. Paper still makes
+  two non-blocking background calls at startup (an update check to
+  `fill.papermc.io` and a metrics/session call); if egress is available they
+  succeed silently, if not they fail harmlessly and never block startup.
+  `max-players=1`, adventure mode, peaceful void world.
