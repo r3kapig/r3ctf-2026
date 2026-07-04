@@ -80,7 +80,7 @@ INDEX = """<!doctype html><meta charset=utf-8>
 <title>Blinky CTF</title>
 <style>body{{font:14px/1.5 monospace;max-width:820px;margin:2rem auto;padding:0 1rem}}
 pre{{background:#f4f4f4;padding:1rem;overflow:auto;white-space:pre-wrap}}</style>
-<h1>&mdash; Blinky</h1>
+<h1>Blinky</h1>
 <p>Upload your USER-region submission (a <code>memory.mem</code>, or a raw binary
 loaded at 0x0). It's spliced under the secret kernel and run; stdout is returned.</p>
 <form method=post action=/submit enctype=multipart/form-data>

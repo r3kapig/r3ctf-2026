@@ -1,9 +1,9 @@
 # Blinky
 
 - **Category:** Misc (hardware / microarchitecture)
-- **Author:**
-- **Difficulty:**
-- **Wave:**
+- **Author:** Eritque arcus
+- **Difficulty:** Medium
+- **Wave:** 2
 - **Points:**
 - **Solves:**
 
@@ -24,7 +24,7 @@ and, drained as speculative, never commits a fault. **Time** a PROBE reload to t
 correct guess (cache hit) from a wrong one (miss); recover the 8-bit tag silently in a
 single run, then `jr {tag,0x2030}` authenticates the gate and the kernel prints the flag.
 
-Players get the full SoC RTL (with the PAC key redacted) plus a container that builds
+Players get the full SoC RTL (the RTL key is a local placeholder) plus a container that builds
 their MIPS assembly into an uploadable memory image; the kernel, flag, and per-run PAC
 key stay on the server.
 
@@ -68,7 +68,7 @@ SERVER=http://127.0.0.1:8080 ./infra.sh health
 
 - `README.md` - this file (metadata + description).
 - `infra.sh` - build + run helper (`build` / `run` / `local` / `health`).
-- `attachment_src/` — **player handout**: the SoC RTL (PAC key not present), `SOC_run_sim`,
+- `attachment_src/` — **player handout**: the SoC RTL (PAC key is a local placeholder), `SOC_run_sim`,
   `Dockerfile` + `build.sh` (compile a `.s` into an uploadable USER-region `.mem`),
   `run_local.sh` (splice a submission `.mem` with a kernel `.mem` and run the sim),
   `script.ld`, a benign `example_submission.{s,mem}` scaffold, and `example_kernel.mem`

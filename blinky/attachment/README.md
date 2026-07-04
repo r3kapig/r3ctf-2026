@@ -45,7 +45,7 @@ The core boots in **kernel** mode at `0x2000`, initialises, and `eret`s into **u
 
 | File | Purpose |
 |------|---------|
-| `rtl/` | the full SoC source (SystemVerilog); the PAC key is redacted |
+| `rtl/` | the full SoC source (SystemVerilog); the RTL's PAC key is a local placeholder — the server uses a secret per-run key |
 | `SOC_run_sim` | the simulator; loads `memory.mem` from the current directory and runs until `HALT` |
 | `Dockerfile`, `build.sh` | assemble a `.s` submission into an uploadable USER-region `.mem`|
 | `run_local.sh` | splice a submission `.mem` with a local kernel `.mem` and run it under `SOC_run_sim` |
