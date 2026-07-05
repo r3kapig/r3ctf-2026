@@ -219,13 +219,21 @@ def accel() -> str:
 
 
 def reserve_port(host: str, port: int) -> socket.socket:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind((host, port))
-    except OSError as exc:
-        sock.close()
-        raise RuntimeError(f"TCP port {host}:{port} is not available.") from exc
-    return sock
+    # Retry with SO_REUSEADDR so a port left in TIME_WAIT by the proxy we just
+    # killed can be rebound on the next cycle instead of failing the restart.
+    deadline = time.monotonic() + 30.0
+    last_exc: OSError | None = None
+    while time.monotonic() < deadline:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((host, port))
+            return sock
+        except OSError as exc:
+            last_exc = exc
+            sock.close()
+            time.sleep(0.5)
+    raise RuntimeError(f"TCP port {host}:{port} is not available.") from last_exc
 
 
 def wait_for_ssh_banner(port: int, timeout: float) -> None:
@@ -559,6 +567,7 @@ if __name__ == "__main__":
             if rc != 0:
                 raise SystemExit(rc)
             print("[restart] instance timed out; rebooting fresh VM...", flush=True)
+            time.sleep(3)  # let the just-freed public port settle before rebinding
     except SystemExit:
         raise
     except Exception as exc:
