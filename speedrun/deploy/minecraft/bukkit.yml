@@ -1,0 +1,4 @@
+settings:
+  # Disable Bukkit's reconnect throttle. In Docker/proxy/NAT setups, multiple
+  # players can appear to come from the same IP and trigger false throttling.
+  connection-throttle: -1
