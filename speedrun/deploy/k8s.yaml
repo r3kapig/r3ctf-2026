@@ -26,11 +26,11 @@ spec:
               name: minecraft
           resources:
             requests:
-              memory: "3Gi"
+              memory: "4Gi"
               cpu: "2000m"
             limits:
-              memory: "4Gi"
-              cpu: "4000m"
+              memory: "8Gi"
+              cpu: "6000m"
         - name: checker
           image: registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/speedrun-checker:latest
           imagePullPolicy: Always
