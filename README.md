@@ -27,6 +27,12 @@ VM-hosted challenges (e.g. `whisper`, `virtisol`, `winkernel`) keep only their
 ops scripts in `deploy/`; the guest images and per-instance configs live on the
 VM host, not in git.
 
+## Ops utilities
+
+Shared operational helpers live in [`ops/`](./ops/). See [`ops/README.md`](./ops/README.md)
+for usage. These scripts contain no embedded credentials; they rely on `gcloud`
+and `kubectl` authentication from the environment.
+
 ## Challenges
 
 Images built and pushed to
