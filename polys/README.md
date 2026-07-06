@@ -1,11 +1,11 @@
 # polys
 
 - **Category:** Pwn
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:**
+- **Difficulty:**
+- **Wave:**
+- **Points:**
+- **Solves:**
 
 ## Description
 

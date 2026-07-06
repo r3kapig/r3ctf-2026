@@ -4,12 +4,18 @@
 - **Author:** Niebelungen
 - **Difficulty:** Easy
 - **Wave:** 1
-- **Points:** 
-- **Solves:** 
+- **Points:**
+- **Solves:**
 
 ## Description
 
 An East Kernel Challenge in the Age of AI.
+
+## Files
+
+- `attachment/` — player handout (`bzImage`, `initramfs.cpio.gz`, `run.sh`,
+  `server.py`, and a local-repro `Dockerfile`).
+- `deploy/` — live container (`Dockerfile` + `docker-compose.yml`).
 
 ## Deployment
 
@@ -26,9 +32,3 @@ cd deploy && FLAG='flag{test}' docker compose up -d
 ```
 
 Runtime requires `/dev/kvm` and `seccomp=unconfined`. The VM is `-m 2048 -smp 4`.
-
-## Files
-
-- `attachment/` — player handout (`bzImage`, `initramfs.cpio.gz`, `run.sh`,
-  `server.py`, and a local-repro `Dockerfile`).
-- `deploy/` — live container (`Dockerfile` + `docker-compose.yml`).

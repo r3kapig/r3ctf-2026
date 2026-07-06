@@ -9,11 +9,7 @@
 
 ## Description
 
-Not sure this challenge is focused on ZKP or not, but I think the challenge name
-is cool!
-
-A threshold-ECDSA protocol (`cggmp21`-ish, with zero-knowledge proofs) behind a
-proof-of-work gate.
+Not sure this challenge is focus on ZKP or not, but i think the challenge name is cool!
 
 ## Files
 

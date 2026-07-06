@@ -9,9 +9,12 @@
 
 ## Description
 
-A Minecraft speedrun. Players join a shared Paper server, race through the
-run, and on completion receive a code. They submit the code **together with
-their team token** to the checker service, which returns their team's flag.
+Race through a custom Minecraft speedrun environment, defeat the dragon first, recover the hidden run code from The End, and turn that code into the real flag through the checker service. Warning: You only have 10 seconds to see the code, so be careful.
+
+Version: 1.21.10
+
+- Checker: ```nc challenge.ctf2026.r3kapig.com 30337```
+- Server: ```challenge.ctf2026.r3kapig.com:30565```
 
 All teams share **one** instance (one Paper server + one checker), so the flag
 is derived per-team — see "Dynamic flag" below.

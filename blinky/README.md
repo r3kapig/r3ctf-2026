@@ -1,4 +1,4 @@
-# Blinky
+# blinky
 
 - **Category:** Misc (hardware / microarchitecture)
 - **Author:** Eritque arcus
@@ -8,6 +8,14 @@
 - **Solves:**
 
 ## Description
+
+A silicon startup is shopping around a *"secure by construction"* MIPS64r6 soft-core, and the marketing is bold: **even if you own the machine in user mode, you can never redirect control flow into our kernel.** Their proof of confidence is very straightforward, the routine that prints their crown-jewel flag sits at a **fixed, publicly documented kernel address**, and they'll happily boot *whatever user-mode code you send them*.
+
+The magic word is **Pointer Authentication (PAC)**. Every indirect jump that lands in the kernel is checked by a hardware gate: a pointer forged without the secret key faults instead of jumping, and the gate stops answering after a few *loud* failures. No key is readable from user mode, and there is no instruction that will sign a pointer for you.
+
+They shipped you the whole RTL to look at. They think that's safe.
+
+Prove them wrong.
 
 A kernel routine at a **known address** (`0x2030`) prints the flag, but you can't jump
 to it: this 0dMIPS MIPS64r6 soft-core implements **Pointer Authentication (PAC)**. An
@@ -27,6 +35,24 @@ single run, then `jr {tag,0x2030}` authenticates the gate and the kernel prints 
 Players get the full SoC RTL (the RTL key is a local placeholder) plus a container that builds
 their MIPS assembly into an uploadable memory image; the kernel, flag, and per-run PAC
 key stay on the server.
+
+## Files
+
+- `README.md` - this file (metadata + description).
+- `infra.sh` - build + run helper (`build` / `run` / `local` / `health`).
+- `attachment_src/` — **player handout**: the SoC RTL (PAC key is a local placeholder), `SOC_run_sim`,
+  `Dockerfile` + `build.sh` (compile a `.s` into an uploadable USER-region `.mem`),
+  `run_local.sh` (splice a submission `.mem` with a kernel `.mem` and run the sim),
+  `script.ld`, a benign `example_submission.{s,mem}` scaffold, and `example_kernel.mem`
+  (throwaway local kernel — fake flag, fixed offline key — for offline dev). Ships **no**
+  example exploit and **no** real kernel/flag.
+- `attachment/` - handout in zip
+- `deploy/` - the live container: `Dockerfile`, `entrypoint.sh` (dynamic-flag bake), and
+  `deploy/server/` (the runtime the image runs — `server.py`, `kernel.s`,
+  `build_kernel.sh`, `script.ld`, `SOC_run_sim`) that splices the player upload under
+  the per-run secret kernel.
+- `solve/` - reference solver + healthcheck: `ref.s` (the reference exploit), `ref.mem`
+  (its built image), `solve.py` (submits it), `healthcheck.sh`.
 
 ## Deployment
 
@@ -48,6 +74,7 @@ FLAG='r3ctf{...}' PORT=8080 ./infra.sh run
 PORT=8080 ./infra.sh local &
 SERVER=http://127.0.0.1:8080 ./infra.sh health
 ```
+
 - **Port:** container `8080` (HTTP), host `$PORT` (default `8080`)
 - **Flag env:** `FLAG` (format `r3ctf{...}`, lowercase)
 - `SOC_run_sim` is a **prebuilt x86-64** binary from the 0dMIPS SoC, built with
@@ -63,24 +90,6 @@ SERVER=http://127.0.0.1:8080 ./infra.sh health
 - Wrong guesses only fault if they **commit**. Keep them speculative and read the answer
   from cache timing, not from architectural state.
 - The miss/hit latency is noisy (I$/D$ arbiter beat) — measure each guess more than once. -->
-
-## Files
-
-- `README.md` - this file (metadata + description).
-- `infra.sh` - build + run helper (`build` / `run` / `local` / `health`).
-- `attachment_src/` — **player handout**: the SoC RTL (PAC key is a local placeholder), `SOC_run_sim`,
-  `Dockerfile` + `build.sh` (compile a `.s` into an uploadable USER-region `.mem`),
-  `run_local.sh` (splice a submission `.mem` with a kernel `.mem` and run the sim),
-  `script.ld`, a benign `example_submission.{s,mem}` scaffold, and `example_kernel.mem`
-  (throwaway local kernel — fake flag, fixed offline key — for offline dev). Ships **no**
-  example exploit and **no** real kernel/flag.
-- `attachment/` - handout in zip
-- `deploy/` - the live container: `Dockerfile`, `entrypoint.sh` (dynamic-flag bake), and
-  `deploy/server/` (the runtime the image runs — `server.py`, `kernel.s`,
-  `build_kernel.sh`, `script.ld`, `SOC_run_sim`) that splices the player upload under
-  the per-run secret kernel.
-- `solve/` - reference solver + healthcheck: `ref.s` (the reference exploit), `ref.mem`
-  (its built image), `solve.py` (submits it), `healthcheck.sh`.
 
 > `attachment/` is the only thing that goes to players. **Never** ship the kernel source
 > or a real kernel image — the flag is injected at runtime and the kernel region is

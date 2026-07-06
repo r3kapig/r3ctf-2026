@@ -1,4 +1,4 @@
-# netshare
+# NetShare
 
 - **Category:** Misc
 - **Author:** christa
@@ -9,10 +9,12 @@
 
 ## Description
 
-K8S proxy race condition.
+Daniel built GhostByte's authentication system himself, reviewed every line, and signed off without hesitation. As far as he was concerned, it was airtight — a problem already solved, and one he was completely certain he would never have to think about again
 
-Kubernetes on-demand 题目：每支队伍获得一个独立的临时 workload 集群，利用
-EndpointSlice 数据陈旧与 Pod IP 复用完成提权。
+- connect method: ```nc vm.ctf2026.r3kapig.com 28888```
+- flag begin with  `sk-`
+
+If you think your exploit should be working but you’re not getting the flag, please open a ticket.
 
 ## Architecture
 

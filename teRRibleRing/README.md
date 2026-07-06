@@ -11,9 +11,6 @@
 
 Notice that there are 3 "R"s in the title :)
 
-A Ring-LWE style challenge in a polynomial ring over `Zmod(p)`. Distinguish the
-noisy samples from the random ones to recover the flag bits.
-
 ## Files
 
 - `attachment/task.sage` — the SageMath script that generated the samples.

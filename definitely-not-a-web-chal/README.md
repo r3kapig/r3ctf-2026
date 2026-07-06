@@ -9,12 +9,7 @@
 
 ## Description
 
-It's served over HTTP, but it is *definitely* not a web challenge.
-
-A patched PHP interpreter (a pinned `php-src` commit with `heap-isolation` and
-`metadata-ro` patches) runs behind nginx + php-fpm. The flag lives at `/flag`
-(root-only `0400`) and is only readable through the setuid-root `/readflag`
-helper. Pop the interpreter, escalate, and exec `/readflag`.
+Remote OBO Nday in PHP, it is already well documented, so nothing could go wrong, right?
 
 ## Files
 

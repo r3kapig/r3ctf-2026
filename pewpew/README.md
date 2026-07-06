@@ -19,6 +19,9 @@ then connect to the remote Windows host over port 4444 and find the flag in `fla
 > You should NOT bruteforce the service; your exploit should be reliable in
 > fewer than 10 tries.
 
+- Address: ```nc pewpew.ctf2026.r3kapig.com 4444```
+- You will receive ```team token>```, and you need to enter your team token to get your environment
+
 ## Files
 
 - `attachment/to_player.zip` — player handout: `pewpew.exe` plus the Windows

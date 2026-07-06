@@ -9,10 +9,7 @@
 
 ## Description
 
-simple sslvpn... but something more.
-
-SSL VPN inspired by a Fortinet exploit + heap fengshui. Pwn the TLS gateway
-(listening on :4433) to read the flag at `/flag`.
+simple sslvpn...but something more
 
 ## Deployment
 

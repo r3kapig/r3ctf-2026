@@ -1,0 +1,10 @@
+ProductName: Windows Server 2025 Standard
+DisplayVersion: 24H2
+Version: 10.0.26100
+CurrentBuild: 26100
+UBR: 32995
+BuildLabEx: 26100.32995.amd64fre.lt_release_svc_prod1.260605-1857
+EditionID: ServerStandard
+Caption: Microsoft Windows Server 2025 Standard
+BuildNumber: 26100
+OSArchitecture: 64-bit

@@ -9,6 +9,8 @@
 
 ## Description
 
+HE is HEuristic
+
 FHE / HNP / LLL. A heuristic homomorphic-encryption service built on Microsoft SEAL
 (CKKS). Recover the secret scale `delta` using a limited number of encrypt/decrypt
 oracle rounds, then submit `delta mod q` to get the flag.

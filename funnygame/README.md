@@ -9,12 +9,9 @@
 
 ## Description
 
-A fun game challenge.
+A fun game challenge
 
-A Unity (IL2CPP) game reverse challenge. Extract the attachment and reverse
-`FunnyGame.exe` / `GameAssembly.dll` to recover the flag.
-
-## Attachment
+## Files
 
 `attachment/FunnyGame.7z` — the full Unity game (Windows x64, ~131MB
 uncompressed). Extract with 7-Zip, then run / analyze `FunnyGame.exe`.

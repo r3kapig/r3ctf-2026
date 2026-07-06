@@ -9,9 +9,7 @@
 
 ## Description
 
-A static reverse-engineering challenge. The provided ELF binary lifts its input
-into an internal IR / lambda-calculus VM; recover the expected input to extract
-the flag.
+Disclaimer: No barbells were harmed or required in the solving of this challenge.
 
 ## Flag
 

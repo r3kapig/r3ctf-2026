@@ -1,4 +1,4 @@
-# inside
+# Inside
 
 - **Category:** Crypto
 - **Author:** 
@@ -9,9 +9,7 @@
 
 ## Description
 
-An RLWE + sigma-protocol proof-of-knowledge challenge built on SageMath. Players
-interact with a remote service, generate a CRS and an RLWE statement, then produce
-a valid proof of knowledge to recover the flag.
+Crashed PoLwE
 
 ## Files
 

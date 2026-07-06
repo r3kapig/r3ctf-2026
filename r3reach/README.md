@@ -9,10 +9,7 @@
 
 ## Description
 
-A Minecraft (Paper) server challenge. Join the server and capture the flag
-without getting close — the `R3Reach` plugin gates the flag behind a reach check
-("Capture the flag without getting close"). Find a way to reach the flag
-villager from farther than intended.
+We all know the classic Minecraft "Reach" hack. For this challenge, we've locked down the server and disabled any form of Reach modifications. Your objective is to interact with the Flag from a distance that should be impossible. Can you outsmart the restrictions and reach the flag?
 
 Plugin commands: `/magic` ("Something magical happens..."), `/reset`
 ("Reset the challenge").

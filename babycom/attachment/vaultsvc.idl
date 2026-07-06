@@ -1,0 +1,93 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+    object,
+    uuid(4A7B8C12-3D45-6E78-9F01-A234567890BC),
+    pointer_default(unique)
+]
+interface IVaultService : IUnknown
+{
+    HRESULT OpenSession(
+        [in]  BSTR requesterVersion,
+        [in]  BSTR reserved,
+        [out] LONG *phSession,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT CloseSession(
+        [in]  BSTR requesterVersion,
+        [in]  LONG hSession,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT GetSessionInfo(
+        [in]  BSTR requesterVersion,
+        [in]  LONG hSession,
+        [out] BSTR *pInfo,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT StoreEntry(
+        [in]  BSTR requesterVersion,
+        [in]  LONG hSession,
+        [in]  BSTR name,
+        [in]  BSTR value,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT RetrieveEntry(
+        [in]  BSTR requesterVersion,
+        [in]  LONG hSession,
+        [in]  BSTR name,
+        [out] BSTR *pValue,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT StageVault(
+        [in]  BSTR requesterVersion,
+        [in]  LONG hSession,
+        [in]  LONG declaredLen,
+        [out] LONG *pVaultId,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT AppendVaultData(
+        [in]  BSTR requesterVersion,
+        [in]  LONG vaultId,
+        [in]  LONG cbData,
+        [in, size_is(cbData)] BYTE *pData,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT ResizeVault(
+        [in]  BSTR requesterVersion,
+        [in]  LONG vaultId,
+        [in]  LONG newLen,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT CommitVault(
+        [in]  BSTR requesterVersion,
+        [in]  LONG vaultId,
+        [out] LONG *pcbResult,
+        [out, size_is(, *pcbResult)] BYTE **ppResult,
+        [out] BSTR *pServiceVersion);
+
+    HRESULT QueryVaultInfo(
+        [in]  BSTR requesterVersion,
+        [in]  LONG vaultId,
+        [in]  LONG fieldCount,
+        [out] LONG *pcbData,
+        [out, size_is(, *pcbData)] BYTE **ppData,
+        [out] BSTR *pServiceVersion);
+};
+
+[
+    uuid(9A8B7C65-4D32-1E09-F8A7-B6C5D4E3F211),
+    version(1.0)
+]
+library VaultServiceLib
+{
+    importlib("stdole32.tlb");
+
+    [
+        uuid(1B2C3D4E-5F67-8901-A234-56789BCDEF01)
+    ]
+    coclass VaultService
+    {
+        [default] interface IVaultService;
+    };
+};

@@ -1,4 +1,4 @@
-# minemaze
+# MineMaze
 
 - **Category:** Misc (Minecraft)
 - **Author:**
@@ -9,16 +9,26 @@
 
 ## Description
 
-**MineMaze** — a blind, fog-of-war maze on a Folia server. Each run generates a
-200×200 cell maze with 8 locked doors and matching keys; you only see a small
-"bubble" of blocks around you, so you have to explore, collect keys, and unlock
-doors by memory. Reach the goal before the timer runs out and the server awards
-you the flag.
+Players must connect to the challenge server and complete a procedurally generated maze within the time limit. The maze
+is hidden by limited visibility, protected by locked doors, and requires collecting keys in the correct order before reaching the exit.
+
+### Client Requirements
+
+Please use the following client environment:
+
+- Minecraft `26.1.2`
+- Fabric Loader `0.19.3`
+- Fabric API `0.153.0+26.1.2` or later
+- Install the provided client mod: `gmtoolbox-1.0.0.jar`
+
+The GM Toolbox mod is required for the intended challenge experience. Make sure it is placed in your Minecraft `mods` folder together with Fabric API before joining the server.
 
 ## How to play
 
-1. Connect to the server with a **vanilla Minecraft 1.21.x** client (the server
-   runs `online-mode=false`, so no Mojang/Microsoft account is required).
+1. Set up the client environment from "Client Requirements" above (Fabric
+   Loader + Fabric API + `gmtoolbox-1.0.0.jar`) and connect to the server (the
+   server runs `online-mode=false`, so no Mojang/Microsoft account is
+   required).
 2. Run `/startgame` to begin a maze run.
 3. Explore the maze, collect keys, open the locked doors, and reach the goal.
 4. On completion the server tells you the flag.
@@ -31,6 +41,9 @@ start cooldown, `max-players=2` per instance.
 
 ## Files
 
+- `attachment/gmtoolbox-1.0.0.jar` — player handout: the GM Toolbox client mod
+  (install into your Minecraft `mods` folder alongside Fabric API).
+- `attachment/player_rules.pdf` — player handout: challenge rules / how-to-play.
 - `deploy/docker-compose.yml` — runs the `minemaze` image (Folia 26.1.2,
   RekaMaze + GrimAC plugins). Exposes `25565`.
 - `infra.sh` — pull + run a local test instance on `:25565`.
@@ -40,7 +53,8 @@ start cooldown, `max-players=2` per instance.
   `source/README.md`).
 
 The server jar, plugins, world datapack and configs are all baked into the
-image; there is no player-side attachment (just connect with a vanilla client).
+image; the player-side attachment is the GM Toolbox client mod plus the rules
+PDF above.
 
 ## Dynamic flag
 

@@ -1,4 +1,4 @@
-# whisper
+# Whisper
 
 - **Category:** Pwn
 - **Author:** lbytes
@@ -9,12 +9,13 @@
 
 ## Description
 
-Slide into their DMs — they won't even open the message.
+Slide into their DMs, They won't even open the message.
 
-A 0-click Android exploit chain delivered through a messaging app. Craft a malicious
-`.rcard` attachment, send it to a victim over the `whisper` messenger, and trigger a
-heap-to-root exploit in the privileged native `whisperd` daemon inside
-`com.whisper.app` to read the root-only `/flag.txt`.
+### Attachment:
+
+[Google Driver](https://drive.google.com/file/d/1fMBIKpfnyogsyCuhXaU04v4IHNB9bwpA/view?usp=sharing)
+
+[Baidu Pan](https://pan.baidu.com/s/1jjnE50-afruHsXEa6wKPLQ?pwd=R326)
 
 ## Architecture
 

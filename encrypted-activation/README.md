@@ -1,17 +1,26 @@
 # Encrypted Activation
 
 - **Category:** Crypto
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:**
+- **Difficulty:**
+- **Wave:**
+- **Points:**
+- **Solves:**
 
 ## Description
+
+The remote server uses a fixed key. The evaluation keys are provided in the attachments.
 
 An FHE (fully homomorphic encryption) challenge. The server encrypts base-4
 activation digits and asks the player to evaluate a published 10-bit lookup table
 on the encrypted inputs across 16 rounds. Solve all rounds to get the flag.
+
+## Files
+
+- `attachment/` — player handout: `task.py`, `fhe_core.py`, `lut`,
+  `setup/client.bin`, and a placeholder `secret.py` for local runs.
+- `deploy/` — live container: `Dockerfile`, `docker-compose.yml`, `wrap.py` (TCP
+  wrapper), and the real env-based `secret.py`.
 
 ## Deployment
 
@@ -32,10 +41,3 @@ cd deploy && FLAG='r3ctf{test}' docker compose up -d
 
 Runtime needs no special devices (pure-CPU Python crypto). Per-connection compute
 is modest (the heavy homomorphic evaluation happens on the player side).
-
-## Files
-
-- `attachment/` — player handout: `task.py`, `fhe_core.py`, `lut`,
-  `setup/client.bin`, and a placeholder `secret.py` for local runs.
-- `deploy/` — live container: `Dockerfile`, `docker-compose.yml`, `wrap.py` (TCP
-  wrapper), and the real env-based `secret.py`.
