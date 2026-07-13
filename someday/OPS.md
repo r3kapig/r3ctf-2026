@@ -1,19 +1,19 @@
-# someday 运维指南
+# someday Ops Guide
 
-- 题目镜像: `/root/someday/ctf.qcow2`
-- 实例配置: `/root/someday/wk.json`（16 个实例，端口 28400–28415）
-- 玩家账号: `hacker` / `hacker123@`（在 `run.py` 里写死，所有实例共用）
-- flag: `r3ctf{pwn2own_for_the_win!!!!!!!}`（全题同一个）
+- Challenge image: `/root/someday/ctf.qcow2`
+- Instance config: `/root/someday/wk.json` (16 instances, ports 28400–28415)
+- Player account: `hacker` / `hacker123@` (hardcoded in `run.py`, shared by all instances)
+- Flag: `r3ctf{pwn2own_for_the_win!!!!!!!}` (same for the whole challenge)
 - tmux session: `someday`
-- 日志: `/tmp/logs/<port>.log`
+- Logs: `/tmp/logs/<port>.log`
 
 ---
 
-## 当前部署实例清单（端口 / 账号 / admin 密码）
+## Deployed instances (port / account / admin password)
 
-玩家密码统一是 `hacker123@`。admin 密码来自 `/root/someday/wk.json`，每台独立：
+Player password is `hacker123@` for all. Admin passwords come from `/root/someday/wk.json`, one per instance:
 
-| 端口 | 账号 | 玩家密码 | admin 密码 | 连接命令 |
+| Port | Account | Player password | Admin password | Connect command |
 |---|---|---|---|---|
 | 28400 | `hacker` | `hacker123@` | `WK0!bfb35f84f395993c9` | `ssh -p 28400 hacker@vm.ctf2026.r3kapig.com` |
 | 28401 | `hacker` | `hacker123@` | `WK1!58d3344bef41f62f9` | `ssh -p 28401 hacker@vm.ctf2026.r3kapig.com` |
@@ -32,82 +32,86 @@
 | 28414 | `hacker` | `hacker123@` | `WK14!c5ab4d09f705c7221` | `ssh -p 28414 hacker@vm.ctf2026.r3kapig.com` |
 | 28415 | `hacker` | `hacker123@` | `WK15!3545e15e6d4ba6044` | `ssh -p 28415 hacker@vm.ctf2026.r3kapig.com` |
 
-flag（全题同一个）: `r3ctf{pwn2own_for_the_win!!!!!!!}`
+Flag (same for the whole challenge): `r3ctf{pwn2own_for_the_win!!!!!!!}`
 
-> 玩家要能从公网连进来，前提是 `vm.ctf2026.r3kapig.com` DNS 指向这台 VM 宿主机、
-> 且防火墙/安全组放行 28400–28415。
+> Public player access requires `vm.ctf2026.r3kapig.com` DNS pointing at this VM host
+> and the firewall/security group allowing ports 28400–28415.
 
 ---
 
-## 0. 关于 30 分钟自动重启（`--timeout`）
+## 0. The 30-minute auto-restart (`--timeout`)
 
-`run.py` 现在是一个**死循环**：每轮启动一台全新 qemu（`snapshot=on`，客户机
-磁盘改动全部丢弃），用同一套账号/flag 重新 provisioning，跑 `--timeout` 秒，
-到点后关掉这一轮 qemu、立刻开始下一轮——如此往复，**进程不会自己退出**。
+`run.py` is an **infinite loop**: each round boots a fresh qemu (`snapshot=on`, guest
+disk changes discarded), re-provisions the same accounts/flag, runs for `--timeout`
+seconds, then kills that round's qemu and immediately starts the next — **the process
+never exits on its own**.
 
-所以 `--timeout` 的含义 = **每轮运行多久后自动重启一次**。`wk.json` 里
-`timeout=1800` 即 **每 30 分钟重启一次**，每次都是干净客户机，账号 / 密码 /
-flag 保持不变（都从 `wk.json` 读，跨轮不变）。
+So `--timeout` = **how long each round runs before an automatic restart**. `timeout=1800`
+in `wk.json` means **restart every 30 minutes**, always with a clean guest; accounts /
+passwords / flag stay the same (all read from `wk.json`, constant across rounds).
 
-要改间隔：编辑 `wk.json` 里每个条目的 `"timeout"` 字段（单位秒），然后重启该
-实例。常用值：30 分钟 `1800`，1 小时 `3600`，2 小时 `7200`。
+To change the interval: edit the `"timeout"` field (seconds) of each entry in `wk.json`,
+then restart that instance. Common values: 30 min `1800`, 1 hour `3600`, 2 hours `7200`.
 
-> **错峰重启**：`run.py` 的**第一轮**运行时长是 `random(0, timeout)` 均匀随机的，
-> 所以"第一次重启"（以及之后每隔 30 分钟的重启）就在 30 分钟窗口内均匀散开，
-> **不会 16 台同时重启**。稳态下大约每 ~2 分钟有一台实例重启一次（每次约 1.5–2
-> 分钟停机，玩家断开重连即可）。`multirun.py` 启动时还会在每台之间加 6 秒间隔，
-> 避免 16 台 Windows 同时上电造成的 I/O / CPU 尖峰。
+> **Staggered restarts**: `run.py`'s **first** round lasts `random(0, timeout)` (uniform),
+> so the "first restart" (and every 30-minute restart after it) is spread evenly across
+> the 30-minute window — **all 16 never restart at once**. In steady state roughly one
+> instance restarts every ~2 minutes (each ~1.5–2 minutes of downtime; players just
+> reconnect). `multirun.py` also adds a 6-second gap between instances at startup to
+> avoid the I/O / CPU spike of 16 Windows guests powering on simultaneously.
 >
-> 注意：因为第一轮是 `random(0, timeout)`，个别实例的第一轮可能很短（几十秒），
-> 启动后不久就会先重启一次，这是预期行为，重启完就进入稳定的 30 分钟周期。
+> Note: because the first round is `random(0, timeout)`, some instances' first round may
+> be very short (tens of seconds) and restart soon after boot — expected behavior; after
+> that they settle into the steady 30-minute cycle.
 
 ---
 
-## 1. 启动（全部 8 台）
+## 1. Start (all instances)
 
 ```bash
 tmux new-session -d -s someday \
   'cd /root/someday && python3 -u multirun.py /root/someday/wk.json'
 ```
 
-## 2. 查看状态
+## 2. Status
 
 ```bash
-tmux ls                                            # session 是否存在
-tmux capture-pane -t someday -p | tail -40       # 启动日志（含每台密码/flag）
-ss -ltnp | grep -E ':284(0[0-9]|1[0-5])'       # 16 个端口应都在 LISTEN
-ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 16 个 qemu
-tail -f /tmp/logs/28400.log                        # 单台 qemu 日志
+tmux ls                                            # session exists?
+tmux capture-pane -t someday -p | tail -40       # startup log (incl. per-instance password/flag)
+ss -ltnp | grep -E ':284(0[0-9]|1[0-5])'       # all 16 ports should be LISTEN
+ps -eo args | grep qemu-system-x86_64 | grep -v android   # should show 16 qemu processes
+tail -f /tmp/logs/28400.log                        # single-instance qemu log
 ```
 
-从外网验证某台能通：
+Verify external reachability of one instance:
 
 ```bash
-ssh -p 28403 hacker@vm.ctf2026.r3kapig.com      # 密码 hacker123@
+ssh -p 28403 hacker@vm.ctf2026.r3kapig.com      # password hacker123@
 ```
 
-## 3. 关闭
+## 3. Stop
 
-全部 8 台：
+All instances:
 
 ```bash
 tmux kill-session -t someday
-pkill -f '[f]ile=/root/someday/ctf.qcow2' 2>/dev/null || true   # 清残留 qemu
+pkill -f '[f]ile=/root/someday/ctf.qcow2' 2>/dev/null || true   # clean up leftover qemu
 ```
 
-单台（例 28403）：
+Single instance (example 28403):
 
 ```bash
 tmux kill-session -t sd-28403 2>/dev/null || true
 pkill -f '[r]un.py --ssh-port 28403' 2>/dev/null || true
 ```
 
-## 4. 重启
+## 4. Restart
 
-> 平时**不需要手动重启**——`run.py` 每 30 分钟（`timeout`）自动重启每台实例。
-> 只有改了 `wk.json`（flag / 密码 / 端口 / 间隔）或某台卡住时才需要手动重启。
+> Manual restarts are **not normally needed** — `run.py` auto-restarts every instance
+> every 30 minutes (`timeout`). Only restart manually after changing `wk.json`
+> (flag / password / port / interval) or when an instance is stuck.
 
-全部 8 台 = 先关后开：
+All instances = stop then start:
 
 ```bash
 tmux kill-session -t someday 2>/dev/null
@@ -117,7 +121,7 @@ tmux new-session -d -s someday \
   'cd /root/someday && python3 -u multirun.py /root/someday/wk.json'
 ```
 
-单台（用 `run_one.sh` 从 `wk.json` 读该端口参数，例 28403）：
+Single instance (`run_one.sh` reads that port's params from `wk.json`; example 28403):
 
 ```bash
 tmux kill-session -t sd-28403 2>/dev/null
@@ -126,8 +130,9 @@ sleep 2
 tmux new-session -d -s sd-28403 '/root/someday/run_one.sh 28403'
 ```
 
-## 5. 改 flag / 密码 / 端口
+## 5. Changing flag / passwords / ports
 
-- flag / 端口 / admin 密码：改 `wk.json` 对应字段，然后「重启全部」。
-- 玩家密码：不在 `wk.json` 里，是 `run.py` 顶部的 `HACKER_PASSWORD = "hacker123@"`，
-  要改需改 `run.py` 后重启全部。
+- Flag / ports / admin passwords: edit the corresponding fields in `wk.json`, then
+  restart all.
+- Player password: not in `wk.json` — it's `HACKER_PASSWORD = "hacker123@"` at the top
+  of `run.py`; edit `run.py` and restart all to change it.

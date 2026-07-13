@@ -31,31 +31,41 @@ Find the secret. Then leave the exam.
 
 A CET (Control-flow Enforcement Technology) pwn. Players connect to a service
 that runs the `tcet` binary under Intel SDE (Software Development Emulator) with
-CET enforced, and exploit it to read the flag.
+CET enforced (`-cet 1 -cet-endbr-exe 1`), and exploit it to read the flag. The
+`/flag` visible to the player is an encrypted decoy (the real flag is encrypted
+with a random 32-char key each connection and placed at `/flag` alongside the
+`encryptor` binary and the key); the true flag lives at `/root/flag` (root 0400),
+so the intended solve is to bypass CET and gain code execution / arbitrary read
+as root-level access to read it.
 
 ## Files
 
 - `attachment/attachment.zip` — player handout (`pwn` the challenge binary,
   `libc.so.6`, `ld-linux-x86-64.so.2`).
-- `deploy/` — the live container (`Dockerfile`, `bin/` (`tdocker-server`,
-  `drop-exec`, `encryptor`), `challenge/` (`tcet`, `libc.so.6`,
-  `ld-linux-x86-64.so.2`), `environment/` (Intel SDE), and the
-  `entrypoint.sh` / `start.sh` / `run_challenge.sh` scripts).
+- `deploy/` — the live container build context: `Dockerfile` (`ubuntu:24.04`),
+  `bin/` (`tdocker-server`, `drop-exec`, `encryptor`), `challenge/` (`tcet`,
+  `libc.so.6`, `ld-linux-x86-64.so.2`), `environment/` (Intel SDE
+  `sde-external-10.8.0`), and the `entrypoint.sh` / `start.sh` /
+  `run_challenge.sh` scripts.
+- `infra.sh` — build + local run script (run from inside `deploy/`:
+  `cd deploy && ../infra.sh`).
 
 ## Deployment
 
-Single container (`ubuntu:24.04`). `tdocker-server` listens on TCP **9999**; per
-connection it runs the `tcet` binary under Intel SDE with CET enabled
-(`-cet 1 -cet-endbr-exe 1`). The flag is injected via the `FLAG` environment
-variable (required); `entrypoint.sh` writes it to `/root/flag` (root 0400) and
-scrubs the env. (The `/flag` players see is an encrypted decoy produced by
-`start.sh`; the real flag is `/root/flag`.)
+Single container (`ubuntu:24.04`). `tdocker-server` listens on TCP **9999**
+(host port **30005** in `infra.sh`); per connection it runs the `tcet` binary
+under Intel SDE with CET enabled. The flag is dynamic: the `FLAG` environment
+variable is required at runtime; `entrypoint.sh` writes it to `/root/flag`
+(root 0400) and then scrubs the env. Per connection, `start.sh` generates a
+random key, encrypts the real flag into the `/flag` decoy, and drops privileges
+via `drop-exec` before launching `run_challenge.sh`.
 
 ```sh
 docker build -t registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/escape-cet:latest deploy/
-# local run:
+# local run (builds and serves on host port 30005 with a test flag):
 cd deploy && ../infra.sh
 ```
 
 Runtime needs no special devices (pure CPU; Intel SDE dynamic instrumentation).
-Per-connection CPU is moderate (SDE emulation overhead).
+Per-connection CPU is moderate (SDE emulation overhead); `infra.sh` limits the
+container to 1 CPU / 1 GiB RAM.

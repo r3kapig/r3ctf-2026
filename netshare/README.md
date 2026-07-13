@@ -9,126 +9,87 @@
 
 ## Description
 
-Daniel built GhostByte's authentication system himself, reviewed every line, and signed off without hesitation. As far as he was concerned, it was airtight — a problem already solved, and one he was completely certain he would never have to think about again
+Daniel built GhostByte's authentication system himself, reviewed every line, and signed off without hesitation. As far as he was concerned, it was airtight — a problem already solved, and one he was completely certain he would never have to think about again.
 
-- connect method: ```nc vm.ctf2026.r3kapig.com 28888```
-- flag begin with  `sk-`
+NetShare is a Kubernetes CTF challenge about stale EndpointSlice data and Pod IP reuse. It is delivered on demand via the **ret.sh** platform: each team gets a bridge pod that talks over `nc` to a KOND controller, which spins up a dedicated CAPI workload cluster for the team, generates a per-team flag from the team id, and returns a kubeconfig for a low-privilege `runtime-operator` identity. Players use that kubeconfig in their own cluster to complete the exploitation.
 
-If you think your exploit should be working but you’re not getting the flag, please open a ticket.
+- Connect: `nc vm.ctf2026.r3kapig.com 28888`
+- Flag format: `sk-<uuid>` (no braces)
 
-## Architecture
+If you think your exploit should be working but you're not getting the flag, please open a ticket.
 
-- `kubernetes-on-demand-main/` — KOND controller：`docker compose` 启动，`nc` 监听
-  :8888，每条连接创建一套 CAPI workload 集群，并自动应用 `challenge.yaml` / `user.yaml`。
-- `ctf-challenge/` — 题目主体（`challenge.yaml`：命名空间、受害服务、陈旧
-  EndpointSlice 控制器、各类策略；`user.yaml`：选手低权身份 `runtime-operator`）。
-- `ret2shell-ext-controller-pod/` — ret.sh 实例 bridge pod 镜像源码
-  （`app.py` nc 桥 + `pod.yaml` + `checker.rx`），已 build/push 为
-  `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest`。
+## Files
+
+- `kubernetes-on-demand-main/` — KOND controller: started with `docker compose`, `nc` listener on :8888; each connection creates a CAPI workload cluster and automatically applies `challenge.yaml` / `user.yaml` (cluster templates in `resources/`).
+- `ctf-challenge/challenge.yaml` — challenge body: namespace, victim service `profile-query`, the stale EndpointSlice controller, policies and platform workers.
+- `ctf-challenge/user.yaml` — player low-privilege identity `runtime-operator` and its RBAC.
+- `ret2shell-ext-controller-pod/` — ret.sh instance bridge pod image source: `app.py` (nc bridge serving the kubeconfig on :5000), `pod.yaml` (instance manifest), `checker.rx` (flag checker), `Dockerfile`. Image: `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest`.
+- `infra.sh` — notes/echo script documenting the build + controller run commands.
 
 ## Deployment
 
-bridge 镜像已 build/push：`registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest`。
-完整部署步骤见下文「部署(ret.sh 按需环境)」。
-
----
-
-# Net Share
-
-Net Share 是一道关于 EndpointSlice 数据陈旧与 Pod IP 复用的 Kubernetes CTF 题目。
-线上通过 **ret.sh** 平台按需下发:每支队伍由 ret.sh 拉起一个 bridge pod,经
-`nc` 与 KOND controller 交互,由 controller 为该队伍创建独立的 workload 集群、
-按 team id 生成专属 flag,并把 kubeconfig 进行返回
-
-
-## 部署(ret.sh 按需环境)
-
-整体流程:
+On-demand ret.sh environment; there is no single long-lived instance. Flow:
 
 ```text
-选手点击「创建」
-  → ret.sh 拉起 bridge pod(注入 RET2SHELL_TEAM_ID + CONTROLLER_HOST + CONTROLLER_PORT)
-  → bridge pod 通过 nc 连接 controller,发送 team id
-  → controller 为该队伍创建独立 workload 集群,
-     用 team id 生成 sk-<uuid> flag 并注入 service assertion
-  → controller 回传 runtime-operator 的 kubeconfig
-  → bridge pod 在 :5000 网页上展示 kubeconfig
-  → 选手用该 kubeconfig 在自己的集群里完成利用
-停止实例 → bridge pod 退出 → nc 连接断开 → controller 自动销毁该集群
+player clicks "create"
+  → ret.sh starts a bridge pod (injects RET2SHELL_TEAM_ID + CONTROLLER_HOST + CONTROLLER_PORT)
+  → bridge pod connects to the controller via nc and sends the team id
+  → controller creates a dedicated workload cluster, generates the sk-<uuid> flag
+     from the team id and injects it into the service assertion
+  → controller returns the runtime-operator kubeconfig
+  → bridge pod shows the kubeconfig on a :5000 web page
+  → player uses that kubeconfig to exploit in their own cluster
+stopping the instance → bridge pod exits → nc disconnects → controller destroys the cluster
 ```
 
-组件:
+Deployment steps:
 
-| 路径 | 作用 |
-|---|---|
-| `kubernetes-on-demand-main/` | KOND controller:`docker compose` 启动,`nc` 监听 :8888;每条连接创建一套 CAPI workload 集群,并自动把 `challenge.yaml` / `user.yaml` 应用进去。 |
-| `ctf-challenge/challenge.yaml` | 题目主体:命名空间、受害服务 `profile-query`、陈旧 EndpointSlice 控制器、各类策略与平台 worker。 |
-| `ctf-challenge/user.yaml` | 选手低权身份 `runtime-operator` 及其 RBAC。 |
-| `ret2shell-ext-controller-pod/` | ret.sh 实例 bridge pod:`app.py`(nc 桥)、`pod.yaml`(实例清单)、`checker.rx`(flag 校验)。 |
+1. Start the controller:
 
-### 部署步骤
-
-1. 启动 controller:
-
-```bash
+```sh
 cd kubernetes-on-demand-main
-PUBLIC_HOST=<选手可达的 controller 主机 IP> \
-FLAG_SALT=<与平台一致的盐> FLAG_CHAL_ID=<与平台一致的题目 id> \
+PUBLIC_HOST=<controller host IP reachable by players> \
+FLAG_SALT=<salt matching the platform> FLAG_CHAL_ID=<challenge id matching the platform> \
 docker compose up -d
 ```
 
-controller 会监听 `nc` :8888,并为每条连接创建一套 workload 集群。
+The controller listens for `nc` on :8888 and creates one workload cluster per connection.
 
-2. 对齐 flag 参数(controller 与 ret.sh `checker.rx` 必须一致,否则提交不通过):
+2. Align flag parameters (controller and ret.sh `checker.rx` must match, or submissions fail):
+   - controller `FLAG_SALT` == `checker.rx` `ENCRYPT_KEY`
+   - controller `FLAG_CHAL_ID` == `checker.rx` `HASH_KEY`
 
-   - controller `FLAG_SALT`  == `checker.rx` 的 `ENCRYPT_KEY`
-   - controller `FLAG_CHAL_ID` == `checker.rx` 的 `HASH_KEY`
+3. Build and push the bridge pod image:
 
-3. 构建并推送 bridge pod 镜像:
-
-```bash
+```sh
 cd ret2shell-ext-controller-pod
 docker build -t registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest .
 docker push registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/netshare:latest
 ```
 
-4. 在 ret.sh 上配置题目:
+4. Configure the challenge on ret.sh:
+   - `ret2shell-ext-controller-pod/checker.rx`: point `CONTROLLER_HOST` / `CONTROLLER_PORT` at the controller from step 1; align `ENCRYPT_KEY` / `HASH_KEY` per step 2; handle the `sk-` prefix parsing per platform convention (flag is `sk-<uuid>`, no braces)
+   - `ret2shell-ext-controller-pod/pod.yaml`: set `image` to the image from step 3
+   - set `checker.rx` as the flag checker and `pod.yaml` as the instance manifest
 
-   - `ret2shell-ext-controller-pod/checker.rx`:将 `CONTROLLER_HOST` / `CONTROLLER_PORT`
-     指向第 1 步的 controller;`ENCRYPT_KEY` / `HASH_KEY` 按第 2 步对齐;按平台约定
-     处理 `sk-` 前缀的解析(flag 形如 `sk-<uuid>`,不带花括号)
-   - `ret2shell-ext-controller-pod/pod.yaml`:把 `image` 改成第 3 步的镜像
-   - 将 `checker.rx` 设为该题的 flag checker,`pod.yaml` 设为实例清单
+Environment requirements (the controller creates workload clusters from the templates in `kubernetes-on-demand-main/resources/`, which already provide the properties the vulnerability needs):
 
+- Kubernetes v1.28 (created by CAPI, `ValidatingAdmissionPolicy` enabled by default).
+- Calico CNI with small `blockSize: 28` allocation blocks, so a stale backend IP can be re-occupied by the target Pod.
+- Nodes preloaded with the `python:3.11-alpine` image (the target Pod uses `imagePullPolicy: Never`).
 
-### 环境要求
+Local quick check (bypassing ret.sh) — simulate the bridge pod with a single `nc`:
 
-workload 集群由 controller 按模板(`kubernetes-on-demand-main/resources/`)自动创建,
-已具备以下使漏洞成立的特性:
-
-- Kubernetes v1.28(由 CAPI 创建,默认启用 `ValidatingAdmissionPolicy`)。
-- Calico CNI,`blockSize: 28` 的小分配块,使旧后端 IP 能被目标 Pod 重新占用。
-- 节点预置 `python:3.11-alpine` 镜像(目标 Pod 使用 `imagePullPolicy: Never`)
-
-### 本地快速验证(不经 ret.sh)
-
-可直接用一条 `nc` 模拟 bridge pod 的行为:
-
-```bash
-printf '62\n' | nc <controller 主机> 8888   # 保持连接打开
+```sh
+printf '62\n' | nc <controller host> 8888   # keep the connection open
 ```
 
-输出中 `-----BEGIN KUBECONFIG-----` 与 `-----END KUBECONFIG-----` 之间即为 kubeconfig;
-保存后即可 `kubectl --kubeconfig <文件> get ns`, 关闭该连接会销毁对应集群
+The kubeconfig is between `-----BEGIN KUBECONFIG-----` and `-----END KUBECONFIG-----` in the output; save it and run `kubectl --kubeconfig <file> get ns`. Closing the connection destroys the corresponding cluster.
 
-### 验证可用权限
+Verify available permissions after obtaining the kubeconfig:
 
-拿到 kubeconfig 后:
-
-```bash
+```sh
 export KUBECONFIG="$PWD/runtime-operator.kubeconfig"
 kubectl get pods -n tenant-runtime
 kubectl get pods,svc,endpoints,endpointslices -n customer-platform -o wide
 ```
-
-

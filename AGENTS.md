@@ -5,16 +5,24 @@ sources for the R3CTF 2026 CTF challenges.
 
 ## What this is
 
-- Each challenge = one top-level dir (`<challenge>/`, **flat** — no category folders).
+- **34 challenges**, each one top-level dir (`<challenge>/`, **flat** — no category
+  folders). Per-challenge `README.md` has a fixed format: six metadata bullets +
+  Description / Files / Deployment sections; challenge-specific detail lives there.
 - Images push to `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<challenge>:latest`.
 - Authoritative challenge / image / port / resource list: **`CHALLENGE.md`**.
 - Full ops runbook (remote build, troubleshooting, known issues): **`DEPLOY.md`**.
+- 5 dirs came from the ret2shell platform export: `r3chat/`, `tap2pwn/`,
+  `security-usage-intelligence/`, `survey/`, `sanity-check/`. The last four are
+  statement-only (static flag + `checker.rx`). `r3chat/` runs as two images
+  `r3chat-{server,bot}:latest`; its build source lives in
+  `r3chat/src/` (the 79 MB Windows installer is
+  external-only, see `r3chat/attachment/links.txt`).
 
 ## Layout
 
 ```text
 <challenge>/
-├── README.md        # metadata + description
+├── README.md        # six metadata bullets + Description/Files/Deployment
 ├── infra.sh         # build + run script
 ├── attachment/      # player handout (large artifacts hosted externally)
 └── deploy/          # live container / infra / ops scripts
@@ -51,11 +59,10 @@ If the Dockerfile isn't at the context root:
   builds/runs whisper victims locally; use `rsync` to the VM, `tar | ssh tar` to ops.
 - **File size:** `>100MB` is rejected (GH001), `>50MB` warns. Compress to 7z, or
   host externally + a `.txt` placeholder. Scan with `find . -type f -size +50M`.
-- **Don't rebuild `trustedhash`** — retag the existing `trusted-hash-portal:local`.
 - **No parallel heavy builds** on the ops host (15Gi RAM). SEAL / Nix / PHP-source
   compiles are heavy — run serially.
-- **macOS tar:** always `COPYFILE_DISABLE=1` + `--exclude='._*'` to avoid AppleDouble
-  `._*` files breaking C/C++ builds.
+- **macOS tar:** always `COPYFILE_DISABLE=1` + `--exclude='._*'` (AppleDouble files
+  break C/C++ builds).
 - `reference/` is gitignored (1.2G of 2025 reference material; not part of the repo).
 
 ## Conventions

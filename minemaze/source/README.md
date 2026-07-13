@@ -2,7 +2,7 @@
 
 This is the **build context** the author used to produce the `rekamaze-folia`
 image (which we retag as `minemaze:latest`). It is kept here for reference only —
-the image is **already built and pushed**, so nothing here needs building.
+the image is **already built**, so nothing here needs building.
 
 ## What's here
 

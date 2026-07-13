@@ -1,0 +1,10 @@
+tap2pwn player handout (hosted externally — too shady/large for the repo):
+
+- Google Drive: https://drive.google.com/file/d/1e1ukvXzEnuth81GIMdN-PhyAUSVdi3t5/view?usp=sharing
+- Baidu Pan:    https://pan.baidu.com/s/1wZhcZpjZV5uiryqGRnxugw?pwd=R326
+
+Archive password: tap2pwn
+
+RCE demo video: https://drive.google.com/file/d/16_wDv8ehgogdtuFB8M02t7MlyO4YgH_9/view?usp=sharing
+
+NOTE: ALL PARTS OF THE ATTACHMENTS WERE DOWNLOADED FROM SHADY SOURCES. RUN AT YOUR OWN RISK.

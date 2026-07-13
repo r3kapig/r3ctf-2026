@@ -1,0 +1,17 @@
+services:
+  server:
+    build:
+      context: ./server/
+    ports:
+      - "8443:8443"
+
+  bot:
+    build:
+      context: ./bot
+    depends_on:
+      - server
+    environment:
+      R3CHAT_HOST: "server"
+      R3CHAT_PORT: "8443"
+      R3CHAT_BOT: "1"
+      FLAG: "${FLAG:-r3ctf{replace_me_with_the_real_flag}}"

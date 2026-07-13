@@ -1,20 +1,21 @@
-# babycom 运维指南
+# babycom Ops Runbook
 
-- 题目镜像: `/root/babycom/babycom.qcow2`
-- 实例配置: `/root/babycom/vs.json`（16 个实例，端口 28300–28315）
-- 玩家账号: `hacker` / `<每台随机密码>`（密码见 `vs.json` 的 `user_password` 字段）
-- flag: `r3ctf{intended-flag-extraction-without-code-exec}`（全题同一个）
+- VM image: `/root/babycom/babycom.qcow2`
+- Instance config: `/root/babycom/vs.json` (16 instances, ports 28300–28315)
+- Player account: `hacker` / `<per-instance random password>` (see the `user_password` field in `vs.json`)
+- Flag: `r3ctf{intended-flag-extraction-without-code-exec}` (same for all instances)
 - tmux session: `babycom`
-- 日志: `/tmp/logs/<port>.log`
+- Logs: `/tmp/logs/<port>.log`
 
 ---
 
-## 当前部署实例清单（端口 / 账号 / 密码）
+## Current instance credentials (port / account / password)
 
-下面这些来自 `/root/babycom/vs.json`，是**当前这一轮**部署的玩家凭据。每次重新
-生成 `vs.json` 密码都会变；变了之后用第 3 节的命令重新读取，并更新这里。
+From `/root/babycom/vs.json` — the player credentials for the **current** deployment.
+Passwords change every time `vs.json` is regenerated; re-read them with the command
+in section 3 and update this table.
 
-| 端口 | 账号 | 密码 | 连接命令 |
+| Port | Account | Password | Connect |
 |---|---|---|---|
 | 28300 | `hacker` | `VU0!28287750d2360b4d9` | `ssh -p 28300 hacker@vm.ctf2026.r3kapig.com` |
 | 28301 | `hacker` | `VU1!5726795ad027e0639` | `ssh -p 28301 hacker@vm.ctf2026.r3kapig.com` |
@@ -33,17 +34,18 @@
 | 28314 | `hacker` | `VU14!9b3f651b5697499f3` | `ssh -p 28314 hacker@vm.ctf2026.r3kapig.com` |
 | 28315 | `hacker` | `VU15!a01010b87e72e0aab` | `ssh -p 28315 hacker@vm.ctf2026.r3kapig.com` |
 
-flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
+Flag (same for all; read inside the guest via the COM service vulnerability):
 `r3ctf{intended-flag-extraction-without-code-exec}`
 
-> 玩家要能从公网连进来，前提是 `vm.ctf2026.r3kapig.com` DNS 指向这台 VM 宿主机、
-> 且防火墙/安全组放行 28300–28315。
+> Players connect from the public internet, so `vm.ctf2026.r3kapig.com` must resolve
+> to this VM host and the firewall/security group must allow ports 28300–28315.
 
 ---
 
-## 0. 前置依赖（必须先放好，否则启动直接报错）
+## 0. Prerequisites (must be in place or startup fails)
 
-`run.py` 启动前会从宿主机 `/root/archive/bin/` 把 3 个 COM 服务文件复制进客户机：
+Before starting a guest, `run.py` copies 3 COM service files from the host's
+`/root/archive/bin/` into the guest:
 
 ```
 /root/archive/bin/vaultsvc.exe
@@ -51,79 +53,84 @@ flag（全题同一个，在客户机里通过 COM 服务漏洞读取）:
 /root/archive/bin/vaultsvc.tlb
 ```
 
-缺任何一个会报：`required challenge artifact does not exist: /root/archive/bin/vaultsvc.exe`
+If any is missing: `required challenge artifact does not exist: /root/archive/bin/vaultsvc.exe`
 
 ---
 
-## 1. 关于 30 分钟自动重启（`--timeout`）
+## 1. The 30-minute auto-restart (`--timeout`)
 
-`run.py` 现在是一个**死循环**：每轮启动一台全新 qemu（`snapshot=on`，客户机
-磁盘改动全部丢弃），用同一套账号/flag 重新 provisioning，跑 `--timeout` 秒，
-到点后关掉这一轮 qemu、立刻开始下一轮——如此往复，**进程不会自己退出**。
+`run.py` is an **infinite loop**: each round boots a fresh qemu (`snapshot=on`, all
+guest disk changes discarded), re-provisions with the same account/flag, runs for
+`--timeout` seconds, then kills that round's qemu and immediately starts the next
+round — the process never exits on its own.
 
-所以 `--timeout` 的含义 = **每轮运行多久后自动重启一次**。`vs.json` 里
-`timeout=1800` 即 **每 30 分钟重启一次**，每次都是干净客户机，账号 / 密码 /
-flag 保持不变（都从 `vs.json` 读，跨轮不变）。
+So `--timeout` = **how long each round runs before an auto-restart**. `timeout=1800`
+in `vs.json` means **restart every 30 minutes**, always with a clean guest; account /
+password / flag stay the same (read from `vs.json`, stable across rounds).
 
-要改间隔：编辑 `vs.json` 里每个条目的 `"timeout"` 字段（单位秒），然后重启该
-实例。常用值：30 分钟 `1800`，1 小时 `3600`，2 小时 `7200`。
+To change the interval: edit the `"timeout"` field (seconds) of each entry in
+`vs.json`, then restart that instance. Common values: 30 min `1800`, 1 h `3600`, 2 h `7200`.
 
-> **错峰重启**：`run.py` 的**第一轮**运行时长是 `random(0, timeout)` 均匀随机的，
-> 所以"第一次重启"（以及之后每隔 30 分钟的重启）就在 30 分钟窗口内均匀散开，
-> **不会 16 台同时重启**。稳态下大约每 ~2 分钟有一台实例重启一次（每次约 1.5–2
-> 分钟停机，玩家断开重连即可）。`multirun.py` 启动时还会在每台之间加 6 秒间隔，
-> 避免 16 台 Windows 同时上电造成的 I/O / CPU 尖峰。
+> **Staggered restarts**: `run.py`'s **first** round lasts `random(0, timeout)` seconds,
+> so the first restart (and every 30-minute restart after it) spreads uniformly across
+> the 30-minute window — **the 16 instances never all restart at once**. In steady
+> state roughly one instance restarts every ~2 minutes (each restart is ~1.5–2 min of
+> downtime; players just reconnect). `multirun.py` also adds a 6-second gap between
+> instances at startup to avoid the I/O / CPU spike of 16 Windows VMs powering on
+> simultaneously.
 >
-> 注意：因为第一轮是 `random(0, timeout)`，个别实例的第一轮可能很短（几十秒），
-> 启动后不久就会先重启一次，这是预期行为，重启完就进入稳定的 30 分钟周期。
+> Note: because the first round is `random(0, timeout)`, some instances may have a
+> very short first round (tens of seconds) and restart soon after startup — this is
+> expected; afterwards they settle into the stable 30-minute cycle.
 
 ---
 
-## 2. 启动（全部 8 台）
+## 2. Start (all 16 instances)
 
 ```bash
 tmux new-session -d -s babycom \
   'cd /root/babycom && python3 -u multirun.py /root/babycom/vs.json'
 ```
 
-## 3. 查看状态
+## 3. Status
 
 ```bash
-tmux ls                                            # session 是否存在
-tmux capture-pane -t babycom -p | tail -40        # 启动日志（含每台密码/flag）
-ss -ltnp | grep -E ':283(0[0-9]|1[0-5])'       # 16 个端口应都在 LISTEN
-ps -eo args | grep qemu-system-x86_64 | grep -v android   # 应有 16 个 qemu
-tail -f /tmp/logs/28300.log                        # 单台 qemu 日志
+tmux ls                                            # does the session exist
+tmux capture-pane -t babycom -p | tail -40        # startup log (incl. per-instance password/flag)
+ss -ltnp | grep -E ':283(0[0-9]|1[0-5])'       # all 16 ports should be LISTEN
+ps -eo args | grep qemu-system-x86_64 | grep -v android   # should show 16 qemu processes
+tail -f /tmp/logs/28300.log                        # single-instance qemu log
 ```
 
-查看某台的玩家密码（从配置里读）：
+Read an instance's player password from the config:
 
 ```bash
 python3 -c "import json;[print(e['ssh_port'],e['user_password']) for e in json.load(open('/root/babycom/vs.json'))]"
 ```
 
-## 4. 关闭
+## 4. Stop
 
-全部 8 台：
+All 16 instances:
 
 ```bash
 tmux kill-session -t babycom
-pkill -f '[f]ile=/root/babycom/babycom.qcow2' 2>/dev/null || true   # 清残留 qemu
+pkill -f '[f]ile=/root/babycom/babycom.qcow2' 2>/dev/null || true   # clean up leftover qemu
 ```
 
-单台（例 28303）：
+Single instance (e.g. 28303):
 
 ```bash
 tmux kill-session -t bc-28303 2>/dev/null || true
 pkill -f '[r]un.py --ssh-port 28303' 2>/dev/null || true
 ```
 
-## 5. 重启
+## 5. Restart
 
-> 平时**不需要手动重启**——`run.py` 每 30 分钟（`timeout`）自动重启每台实例。
-> 只有改了 `vs.json`（flag / 密码 / 端口 / 间隔）或某台卡住时才需要手动重启。
+> Manual restarts are **not normally needed** — `run.py` auto-restarts each instance
+> every 30 minutes (`timeout`). Only restart manually after changing `vs.json`
+> (flag / password / port / interval) or when an instance is stuck.
 
-全部 8 台 = 先关后开：
+All 16 instances = stop then start:
 
 ```bash
 tmux kill-session -t babycom 2>/dev/null
@@ -133,7 +140,7 @@ tmux new-session -d -s babycom \
   'cd /root/babycom && python3 -u multirun.py /root/babycom/vs.json'
 ```
 
-单台（用 `run_one.sh` 从 `vs.json` 读该端口参数，例 28303）：
+Single instance (`run_one.sh` reads that port's parameters from `vs.json`; e.g. 28303):
 
 ```bash
 tmux kill-session -t bc-28303 2>/dev/null
@@ -142,7 +149,8 @@ sleep 2
 tmux new-session -d -s bc-28303 '/root/babycom/run_one.sh 28303'
 ```
 
-## 6. 改 flag / 密码 / 端口
+## 6. Change flag / password / port
 
-改 `vs.json` 对应字段（`flag` / `ssh_port` / `user_password` / `admin_password` / `timeout`），
-然后「重启全部」或「重启单台」。玩家密码是每台独立的 `user_password`。
+Edit the corresponding fields in `vs.json` (`flag` / `ssh_port` / `user_password` /
+`admin_password` / `timeout`), then "restart all" or "restart single". The player
+password is the per-instance `user_password`.

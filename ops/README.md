@@ -1,21 +1,22 @@
 # Ops utilities
 
-Small helper scripts used to operate the CTF infrastructure.
+Helper scripts for operating the GKE cluster.
 
-## `k8s_node_summary.py`
-
-One-line-per-node summary of GKE cluster resource usage: CPU / memory usage,
-Pod counts, and declared requests / limits.
-
-### Requirements
+## Prerequisites
 
 - `gcloud`
 - `kubectl`
 - Access to the target GKE cluster
 
-### Usage
+No credentials or keys are embedded in any script; they rely on `gcloud`
+authentication from the environment.
 
-Set the target cluster via environment variables:
+## `k8s_node_summary.py`
+
+One-line-per-node summary of cluster resource usage: CPU/memory usage, Pod
+counts, and declared requests/limits. Read-only — never writes to the cluster.
+
+### Usage
 
 ```bash
 export GCP_PROJECT=hydrogene7
@@ -25,16 +26,16 @@ export GKE_LOCATION=asia-east2-b
 python3 ops/k8s_node_summary.py
 ```
 
-To also list pods in problematic states (`Pending`, `Failed`, `CrashLoopBackOff`,
+Also list pods in problematic states (`Pending`, `Failed`, `CrashLoopBackOff`,
 `Error`):
 
 ```bash
 python3 ops/k8s_node_summary.py --check-problems
 ```
 
-By default the script uses the cluster's internal control-plane endpoint, which
-works from a VM inside the same VPC (e.g. the ops host). To use the public
-endpoint instead:
+By default the script uses the cluster's internal control-plane endpoint
+(works from a VM inside the same VPC, e.g. the ops host). For the public
+endpoint:
 
 ```bash
 export GKE_USE_INTERNAL_IP=false
@@ -56,28 +57,17 @@ python3 ops/k8s_node_summary.py
 | `MEM_REQ` | Sum of Pod memory requests and percentage of node allocatable memory |
 | `MEM_LIM` | Sum of Pod memory limits |
 
-### Notes
-
-- No credentials or keys are embedded in the script. It relies on `gcloud`
-  authentication from the environment.
-- The script does not write anything to the cluster; it is read-only.
-
 ## `gke_monitor.sh`
 
-Wrapper that runs `k8s_node_summary.py` on the ops host every 5 minutes (via
-`cron`), prints a one-line-per-node summary, and sends a Lark alert when it
-detects:
+Runs `k8s_node_summary.py` on the ops host every 5 minutes (via `cron`),
+prints the one-line-per-node summary, and sends a Lark alert when it detects:
 
 - Nodes with CPU% or MEM% >= 80%
 - Pods in `Pending`, `Failed`, `CrashLoopBackOff`, or `Error` states
 - Node count changes
 - Total Pod or challenge Pod count changes >= 50 within 5 minutes
 
-The migration check for the old `n2std32-pool` node pool has been removed since
-that pool no longer exists.
-
-State is kept in `/tmp/.last_gke_summary.json` so the project directory is not
-polluted.
+State is kept in `/tmp/.last_gke_summary.json`.
 
 ### Usage
 
@@ -85,5 +75,18 @@ polluted.
 bash ops/gke_monitor.sh
 ```
 
-Configure the target user for Lark notifications by editing `LARK_USER_ID`
-inside the script.
+Configure the Lark notification target by editing `LARK_USER_ID` inside the
+script.
+
+## Node pool migration scripts
+
+One-shot scripts used to migrate workloads to the `n2std32-nested` pool
+(nested virtualization, 256 max pods per node). Same `GCP_PROJECT` /
+`GKE_CLUSTER` / `GKE_LOCATION` environment variables as above.
+
+- `create_nested_pool.sh` — create the `n2std32-nested` pool
+  (`n2-standard-32`, autoscaling), then taint old pools.
+- `continue_nested_setup.sh` — wait for new nodes Ready, taint old pools
+  (`n2std32-pool`, `n2std32-dense`) with `retiring=true:NoSchedule`, and allow
+  old pools to scale to 0.
+- `drain_old_nodes.sh` — cordon and drain the old `n2std32-pool` nodes.
