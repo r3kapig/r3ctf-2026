@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Agent guidance for the `r3kapig/r3ctf-2026` repo (`infra` branch): build / deploy
+Agent guidance for the `r3kapig/r3ctf-2026` repo (`master` branch): build / deploy
 sources for the R3CTF 2026 CTF challenges.
 
 ## What this is
@@ -67,7 +67,7 @@ If the Dockerfile isn't at the context root:
 
 ## Conventions
 
-- Branch `infra`, set-upstream to `origin/infra`. Commit + `git push origin infra`.
+- Branch `master`, set-upstream to `origin/master`. Commit + `git push origin master`.
 - After adding / renaming / re-imaging a challenge: update **`CHALLENGE.md`**
   (image, CPU, memory, status) and, if the workflow changed, this file.
 - Flag format: `r3ctf{...}` (lowercase) for dynamic flags; `checker.rx` /

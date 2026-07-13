@@ -78,15 +78,7 @@ bash ops/gke_monitor.sh
 Configure the Lark notification target by editing `LARK_USER_ID` inside the
 script.
 
-## Node pool migration scripts
+## Node requirements
 
-One-shot scripts used to migrate workloads to the `n2std32-nested` pool
-(nested virtualization, 256 max pods per node). Same `GCP_PROJECT` /
-`GKE_CLUSTER` / `GKE_LOCATION` environment variables as above.
-
-- `create_nested_pool.sh` — create the `n2std32-nested` pool
-  (`n2-standard-32`, autoscaling), then taint old pools.
-- `continue_nested_setup.sh` — wait for new nodes Ready, taint old pools
-  (`n2std32-pool`, `n2std32-dense`) with `retiring=true:NoSchedule`, and allow
-  old pools to scale to 0.
-- `drain_old_nodes.sh` — cordon and drain the old `n2std32-pool` nodes.
+Challenge workloads assume GKE nodes with **nested virtualization enabled** and
+**256 max pods per node** (current pool: `n2std32-nested`, `n2-standard-32`).

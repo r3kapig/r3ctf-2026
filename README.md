@@ -1,6 +1,6 @@
 # R3CTF 2026
 
-Challenge build / deploy sources for R3CTF 2026 (`infra` branch).
+Challenge build / deploy sources for R3CTF 2026 (`master` branch).
 
 ## Layout
 

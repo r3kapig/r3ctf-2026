@@ -15,7 +15,7 @@ authoritative challenge list: `CHALLENGE.md`. Per-challenge detail lives in each
 | Remote build dir | `~/r3ctf-build/<challenge>/` |
 | Registry | `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<challenge>:latest` |
 | Registry push | Push **directly from the ops host, no `docker login` needed** (IP allowlist) |
-| Git repo | `https://github.com/r3kapig/r3ctf-2026.git`, branch `infra` |
+| Git repo | `https://github.com/r3kapig/r3ctf-2026.git`, branch `master` |
 | Git auth | `gh auth setup-git` (github.com uses the gh token, non-interactive) |
 | SSH | key-based (`BatchMode=yes` works) |
 
@@ -73,7 +73,7 @@ ssh r3kapig@ops.ctf2026.r3kapig.com \
    attachment / README.
 4. **Remote build + push**: see §2.
 5. **Register in `CHALLENGE.md`**: name / image / CPU / memory / special needs.
-6. **Commit**: `git add <files> && git commit -m "..." && git push origin infra`.
+6. **Commit**: `git add <files> && git commit -m "..." && git push origin master`.
 
 ### Flag injection boilerplate (top of entrypoint; scrub right after parsing)
 
