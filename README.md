@@ -23,6 +23,8 @@ Shared GKE ops helpers live in [`ops/`](./ops/README.md).
 
 - [`CHALLENGE.md`](./CHALLENGE.md) — authoritative challenge / image / port /
   resource list.
+- [`RANK.md`](./RANK.md) — final top-50 scoreboard (hidden/banned excluded)
+  with per-challenge solve matrix.
 - [`DEPLOY.md`](./DEPLOY.md) — ops runbook (remote build → push → deploy →
   troubleshooting).
 - [`AGENTS.md`](./AGENTS.md) — agent guidance + conventions.
