@@ -1,11 +1,8 @@
 # r3ticket
 
-- **Category:** Crypto
 - **Author:** Giapppp
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Submissions:** 138
+- **Solves:** 101
 
 ## Description
 

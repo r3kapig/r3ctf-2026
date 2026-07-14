@@ -1,11 +1,8 @@
 # r3reach
 
-- **Category:** Misc
 - **Author:** Wings
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 38
+- **Solves:** 11
 
 ## Description
 

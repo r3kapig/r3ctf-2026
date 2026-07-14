@@ -1,11 +1,8 @@
 # polys
 
-- **Category:** Pwn
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** Csome
+- **Submissions:** 65
+- **Solves:** 30
 
 ## Description
 

@@ -1,11 +1,8 @@
 # definitely-not-a-web-chal
 
-- **Category:** Pwn
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** Frank & Xia0
+- **Submissions:** 34
+- **Solves:** 10
 
 ## Description
 

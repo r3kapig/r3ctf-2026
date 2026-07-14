@@ -1,11 +1,8 @@
 # lift
 
-- **Category:** Reverse
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** Merrg1n
+- **Submissions:** 239
+- **Solves:** 52
 
 ## Description
 

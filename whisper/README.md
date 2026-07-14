@@ -1,11 +1,8 @@
 # Whisper
 
-- **Category:** Pwn
 - **Author:** lbytes
-- **Difficulty:** Medium/Hard
-- **Wave:** 3
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 28
+- **Solves:** 11
 
 ## Description
 

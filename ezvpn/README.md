@@ -1,11 +1,8 @@
 # ezvpn
 
-- **Category:** Pwn
 - **Author:** Squeasp
-- **Difficulty:** Easy
-- **Wave:** 2
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 171
+- **Solves:** 15
 
 ## Description
 

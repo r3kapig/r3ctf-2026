@@ -1,11 +1,8 @@
 # rECp1cG
 
-- **Category:** Crypto
 - **Author:** deebato
-- **Difficulty:** Medium/Hard
-- **Wave:** 2
-- **Points:**
-- **Solves:**
+- **Submissions:** 19
+- **Solves:** 3
 
 ## Description
 

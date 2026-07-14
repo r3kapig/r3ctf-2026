@@ -1,11 +1,8 @@
 # someday
 
-- **Category:** Pwn
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** mochizou
+- **Submissions:** 2
+- **Solves:** 2
 
 ## Description
 

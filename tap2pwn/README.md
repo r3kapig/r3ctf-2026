@@ -1,11 +1,8 @@
 # tap2pwn
 
-- **Category:** Pwn
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** __readfsdword
+- **Submissions:** 9
+- **Solves:** 3
 
 ## Description
 

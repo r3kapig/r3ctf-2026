@@ -1,11 +1,8 @@
 # blinky
 
-- **Category:** Misc (hardware / microarchitecture)
 - **Author:** Eritque arcus
-- **Difficulty:** Medium
-- **Wave:** 2
-- **Points:**
-- **Solves:**
+- **Submissions:** 73
+- **Solves:** 56
 
 ## Description
 

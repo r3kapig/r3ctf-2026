@@ -1,11 +1,8 @@
 # Inside
 
-- **Category:** Crypto
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** rec
+- **Submissions:** 122
+- **Solves:** 84
 
 ## Description
 

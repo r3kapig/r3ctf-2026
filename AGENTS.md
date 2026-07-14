@@ -6,7 +6,8 @@ sources for the R3CTF 2026 CTF challenges.
 ## What this is
 
 - **34 challenges**, each one top-level dir (`<challenge>/`, **flat** — no category
-  folders). Per-challenge `README.md` has a fixed format: six metadata bullets +
+  folders). Per-challenge `README.md` has a fixed format: three metadata bullets
+  (Author / Submissions / Solves) +
   Description / Files / Deployment sections; challenge-specific detail lives there.
 - Images push to `registry.ctf2026.r3kapig.com/r3ctf_2026_6a511700/<challenge>:latest`.
 - Authoritative challenge / image / port / resource list: **`CHALLENGE.md`**.
@@ -22,7 +23,7 @@ sources for the R3CTF 2026 CTF challenges.
 
 ```text
 <challenge>/
-├── README.md        # six metadata bullets + Description/Files/Deployment
+├── README.md        # three metadata bullets + Description/Files/Deployment
 ├── infra.sh         # build + run script
 ├── attachment/      # player handout (large artifacts hosted externally)
 └── deploy/          # live container / infra / ops scripts

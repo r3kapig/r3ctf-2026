@@ -1,11 +1,8 @@
 # r3chat
 
-- **Category:** 
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** hurrison
+- **Submissions:** 26
+- **Solves:** 8
 
 ## Description
 

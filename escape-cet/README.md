@@ -1,11 +1,8 @@
 # Escape CET
 
-- **Category:** Pwn
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** t1d
+- **Submissions:** 47
+- **Solves:** 18
 
 ## Description
 

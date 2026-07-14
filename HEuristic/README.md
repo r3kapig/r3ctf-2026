@@ -1,11 +1,8 @@
 # HEuristic
 
-- **Category:** Crypto
 - **Author:** dengfeng
-- **Difficulty:** Easy
-- **Wave:** 3
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 100
+- **Solves:** 83
 
 ## Description
 

@@ -1,11 +1,8 @@
 # NetShare
 
-- **Category:** Misc
 - **Author:** christa
-- **Difficulty:** Medium
-- **Wave:** 2
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 77
+- **Solves:** 10
 
 ## Description
 

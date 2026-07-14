@@ -1,11 +1,8 @@
 # Sanity Check
 
-- **Category:** Misc
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** r3kapig
+- **Submissions:** 633
+- **Solves:** 412
 
 ## Description
 

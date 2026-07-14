@@ -1,11 +1,8 @@
 # P1gROXY
 
-- **Category:** Pwn
 - **Author:** uz56764
-- **Difficulty:** Hard
-- **Wave:** 3
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 26
+- **Solves:** 4
 
 ## Description
 

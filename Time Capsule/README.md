@@ -1,11 +1,8 @@
 # Time Capsule
 
-- **Category:** Misc
 - **Author:** WhiteDragonQwQ
-- **Difficulty:** Medium
-- **Wave:** 2
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 61
+- **Solves:** 11
 
 ## Description
 

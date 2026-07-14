@@ -1,11 +1,8 @@
 # Survey
 
-- **Category:** Misc
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** r3kapig
+- **Submissions:** 137
+- **Solves:** 113
 
 ## Description
 

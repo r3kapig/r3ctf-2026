@@ -1,11 +1,8 @@
 # Encrypted Activation
 
-- **Category:** Crypto
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** SSGSS
+- **Submissions:** 118
+- **Solves:** 12
 
 ## Description
 

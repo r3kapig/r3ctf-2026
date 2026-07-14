@@ -1,11 +1,8 @@
 # pewpew
 
-- **Category:** Pwn
 - **Author:** sub1s
-- **Difficulty:** Easy
-- **Wave:** 1
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 19
+- **Solves:** 18
 
 ## Description
 

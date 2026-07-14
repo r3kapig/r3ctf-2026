@@ -1,11 +1,8 @@
 # speedrun
 
-- **Category:** Misc (Minecraft)
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** yuu_2802
+- **Submissions:** 25
+- **Solves:** 15
 
 ## Description
 

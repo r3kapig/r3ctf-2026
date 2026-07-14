@@ -1,11 +1,8 @@
 # teRRibleRing
 
-- **Category:** Crypto
 - **Author:** 糖醋小鸡块
-- **Difficulty:** Medium
-- **Wave:** 3
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 230
+- **Solves:** 4
 
 ## Description
 

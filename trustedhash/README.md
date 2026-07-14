@@ -1,11 +1,8 @@
 # trustedhash
 
-- **Category:** Misc
 - **Author:** starcatmeow
-- **Difficulty:** Hard
-- **Wave:** 3
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 38
+- **Solves:** 22
 
 ## Description
 

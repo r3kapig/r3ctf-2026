@@ -1,11 +1,8 @@
 # Tsuki's Rhythm Game
 
-- **Category:** Misc / Forensics
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** Aura
+- **Submissions:** 97
+- **Solves:** 64
 
 ## Description
 

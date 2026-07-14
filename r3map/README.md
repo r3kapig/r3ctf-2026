@@ -1,11 +1,8 @@
 # r3map
 
-- **Category:** Pwn
 - **Author:** Niebelungen
-- **Difficulty:** Easy
-- **Wave:** 1
-- **Points:**
-- **Solves:**
+- **Submissions:** 15
+- **Solves:** 15
 
 ## Description
 

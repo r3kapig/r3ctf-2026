@@ -1,11 +1,8 @@
 # Mafuyuuuuu-rev
 
-- **Category:** 
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** yuu_2802
+- **Submissions:** 22
+- **Solves:** 19
 
 ## Description
 

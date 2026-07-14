@@ -1,11 +1,8 @@
 # BabyCOM
 
-- **Category:** Pwn
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** vmpr0be
+- **Submissions:** 13
+- **Solves:** 12
 
 ## Description
 

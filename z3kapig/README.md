@@ -1,11 +1,8 @@
 # z3kapig
 
-- **Category:** Crypto
 - **Author:** Giapppp
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 30
+- **Solves:** 25
 
 ## Description
 

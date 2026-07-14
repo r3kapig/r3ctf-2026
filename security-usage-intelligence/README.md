@@ -1,11 +1,8 @@
 # Security Usage Intelligence
 
-- **Category:** Pwn (iOS)
 - **Author:** Nebula Security ([@nebusecurity](https://x.com/nebusecurity))
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Submissions:** 38
+- **Solves:** 4
 
 ## Description
 

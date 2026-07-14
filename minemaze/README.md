@@ -1,11 +1,8 @@
 # MineMaze
 
-- **Category:** Misc (Minecraft)
-- **Author:**
-- **Difficulty:**
-- **Wave:**
-- **Points:**
-- **Solves:**
+- **Author:** carbofish
+- **Submissions:** 3
+- **Solves:** 0
 
 ## Description
 

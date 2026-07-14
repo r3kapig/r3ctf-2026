@@ -1,11 +1,8 @@
 # FunnyGame
 
-- **Category:** Reverse
-- **Author:** 
-- **Difficulty:** 
-- **Wave:** 
-- **Points:** 
-- **Solves:** 
+- **Author:** fu11p7r
+- **Submissions:** 1445
+- **Solves:** 50
 
 ## Description
 
